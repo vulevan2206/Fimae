@@ -41,8 +41,22 @@ public class CommentRepository {
         comment.setChildren(new ArrayList<>());
         comment.setTimeCreated(new Date());
         comment.setPublisher(FirebaseAuth.getInstance().getUid());
-        commentId.set(comment).addOnCompleteListener(ss -> taskCompletionSource.setResult(true))
-                .addOnFailureListener(f -> taskCompletionSource.setResult(false));
+        commentId.set(comment)
+                .addOnSuccessListener(aVoid -> {
+                    // Increment the numberOfComments field in the corresponding Post document
+                    DocumentReference postRef = FirebaseFirestore.getInstance().collection("posts").document(postId);
+                    postRef.update("numberOfComments", FieldValue.increment(1))
+                            .addOnSuccessListener(aVoid1 -> {
+                                taskCompletionSource.setResult(true);
+                            })
+                            .addOnFailureListener(e -> {
+                                taskCompletionSource.setResult(false);
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    taskCompletionSource.setResult(false);
+                });
+
         return taskCompletionSource.getTask();
     }
 

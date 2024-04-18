@@ -166,12 +166,12 @@ public class DetailPostActivity extends AppCompatActivity {
         binding.numberOfComment.setText(String.valueOf(updatePost.getNumberOfComments()));
         binding.likeNumber.setText(String.valueOf(updatePost.getNumberTrue()));
         binding.commentNumber.setText(String.valueOf(updatePost.getNumberOfComments()));
-        binding.numberOfComment.setText(String.valueOf(updatePost.getNumberOfComments()));
         binding.numberofLike.setText(String.valueOf(updatePost.getNumberTrue()));
         binding.numberofLike.setOnClickListener(view -> {
             LikedPostListFragment likedPostListFragment = LikedPostListFragment.getInstance(updatePost.getLikes(), updatePost.getNumberTrue(), post);
             likedPostListFragment.show(getSupportFragmentManager(), "likelist");
         });
+
         binding.iconImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -203,7 +203,8 @@ public class DetailPostActivity extends AppCompatActivity {
             }
         });
         Picasso.get().load(fimaers.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
-        binding.userName.setText(fimaers.getFirstName());
+        String fullname = fimaers.getFirstName() +" "+ fimaers.getLastName();
+        binding.userName.setText(fullname);
         if(imageUrls != null && !imageUrls.isEmpty()){
 //            for(int i = 0; i < imageUrls.size(); i++){
 //                imageUris.add(Uri.parse(imageUrls.get(i)));

@@ -35,7 +35,6 @@
         android:layout_marginTop="12dp"
         android:layout_marginStart="12dp"
         android:background="@android:color/transparent"
-        android:tint="@color/white"
         android:visibility="@{viewmodel.other}"
         android:padding="12dp"
         android:scaleType="fitXY"
@@ -284,7 +283,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:icon="@drawable/ic_category"/>
-
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:icon="@drawable/ic_story"/>
     </com.google.android.material.tabs.TabLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -22,16 +22,19 @@ import com.example.fimae.models.Conversation;
 import com.example.fimae.models.Fimaers;
 import com.example.fimae.repository.ChatRepository;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import java.util.Date;
+import java.util.HashMap;
+
 public class ChatFragment extends Fragment {
-    private FirebaseFirestore firestore;
-    private CollectionReference fimaeUserRef;
-    private CollectionReference conversationRef;
     ConversationAdapter adapter;
     RecyclerView recyclerView;
     private LinearLayout searchbar;
+    HashMap<String, Date> readLastMessageAt = new HashMap<>();
 
     void initListener() {
         Query query = ChatRepository.getDefaultChatInstance().getConversationQuery();
@@ -45,7 +48,43 @@ public class ChatFragment extends Fragment {
             }
         });
         recyclerView.setAdapter(adapter);
+
+        // Lắng nghe sự kiện của query để lấy dữ liệu từ Firestore và cập nhật HashMap
+        query.addSnapshotListener((value, error) -> {
+            if (error != null) {
+                // Xử lý khi có lỗi xảy ra
+                return;
+            }
+
+            for (DocumentSnapshot document : value.getDocuments()) {
+                Conversation conversation = document.toObject(Conversation.class);
+                if (conversation != null) {
+                    // Lấy DocumentReference của tin nhắn cuối cùng
+                    DocumentReference lastMessageRef = conversation.getLastMessage();
+                    // Nếu lastMessageRef không null
+                    if (lastMessageRef != null) {
+                        // Truy cập dữ liệu của tin nhắn cuối cùng từ Firestore
+                        lastMessageRef.get().addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot messageSnapshot = task.getResult();
+                                if (messageSnapshot != null && messageSnapshot.exists()) {
+                                    // Lấy thời gian của tin nhắn cuối cùng từ dữ liệu Firestore
+                                    Date lastMessageTime = messageSnapshot.getDate("time"); // Thay "time" bằng tên trường chứa thời gian trong tài liệu của bạn
+                                    // Thêm thời gian của tin nhắn cuối cùng vào HashMap
+                                    readLastMessageAt.put(conversation.getId(), lastMessageTime);
+                                    adapter.notifyDataSetChanged(); // Cập nhật lại RecyclerView sau khi cập nhật dữ liệu thời gian
+                                }
+                            } else {
+                                // Xử lý khi có lỗi xảy ra khi truy cập dữ liệu của tin nhắn cuối cùng
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
     }
+
 
     @Nullable
     @Override

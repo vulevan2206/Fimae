@@ -48,7 +48,6 @@ public class ShortsReviewProfileAdapter extends FirestoreAdapter<ShortsReviewPro
 
     @Override
     public void onBindViewHolder(@NonNull ShortsReviewHolder holder, int position) {
-        // Get the data at the specified position
         ShortMedia shortMedia = shortMedias.get(position);
         Glide.with(holder.itemView)
                 .load(shortMedia.getMediaUrl())
@@ -56,8 +55,15 @@ public class ShortsReviewProfileAdapter extends FirestoreAdapter<ShortsReviewPro
         holder.shortImage.setOnClickListener(view -> {
             iClickCardListener.onClickUser(shortMedia);
         });
-        holder.shortViewCount.setText(formatNumber(ShortsRepository.getInstance().getNumOfWatched(shortMedia)));
+        // Kiểm tra xem số lượng xem có tồn tại không trước khi hiển thị
+        int viewCount = ShortsRepository.getInstance().getNumOfWatched(shortMedia);
+        if (viewCount >= 0) {
+            holder.shortViewCount.setText(formatNumber(viewCount));
+        }
     }
+
+
+
 
     public static String formatNumber(int number) {
         if (number < 1000) {

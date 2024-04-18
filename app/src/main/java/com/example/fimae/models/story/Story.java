@@ -122,4 +122,14 @@ public class Story implements Serializable {
     public void setUserLikes(ArrayList<String> userLikes) {
         this.userLikes = userLikes;
     }
+
+    private int viewCount;
+    public int getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
 }

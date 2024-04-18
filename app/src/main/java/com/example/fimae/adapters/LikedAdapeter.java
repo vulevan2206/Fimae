@@ -48,13 +48,15 @@ public class LikedAdapeter extends RecyclerView.Adapter<LikedAdapeter.ViewHolder
     public void onBindViewHolder(@NonNull LikedAdapeter.ViewHolder holder, int position) {
         LikedItemUserBinding binding = holder.binding;
         Fimaers userInfo = userInfos.get(position);
-        binding.userName.setText(userInfo.getLastName());
+        String fullName = userInfo.getFirstName() + " " + userInfo.getLastName(); // Tạo chuỗi tên đầy đủ từ firstName và lastName
+        binding.userName.setText(fullName);
         Picasso.get().load(userInfo.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
-        binding.userName.setText(userInfo.getLastName());
+        binding.slogan.setText(userInfo.getBio());
         if(!userInfo.isGender()){
             binding.itemUserIcGender.setImageResource(R.drawable.ic_male);
             binding.genderAgeIcon.setBackgroundResource(R.drawable.shape_gender_border_pink);
         }
+
         binding.ageTextView.setText(String.valueOf(userInfo.calculateAge()));
         if(userInfo.getUid().equals(FirebaseAuth.getInstance().getUid())){
             binding.follow.setVisibility(View.GONE);

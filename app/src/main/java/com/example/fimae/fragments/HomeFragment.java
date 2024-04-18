@@ -51,6 +51,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -97,11 +99,7 @@ public class HomeFragment extends Fragment  {
     private AppCompatButton mBtnFinish;
     private GenderMatch genderMatch;
 
-    private String typeCall = "";
-    private LinearLayout mFlFloatingWaiting;
-    private CircleImageView mImgAvatarWaiting;
-    private ShimmerFrameLayout mShimmerWaitingUser;
-    private LinearLayout mLayoutShimmerUser;
+
     float xDown = 0, yDown = 0;
     private FimaeBottomSheet fimaeBottomSheet;
     List<BottomSheetItem> sheetItems;
@@ -140,8 +138,6 @@ public class HomeFragment extends Fragment  {
 
         userAdapter = new UserHomeViewAdapter(this.getContext());
         // shimmer
-        mShimmerWaitingUser = mView.findViewById(R.id.shimmer_view_users);
-        mLayoutShimmerUser = mView.findViewById(R.id.layout_shimmer_users);
 
         userAdapter.setData(mUsers, new UserHomeViewAdapter.IClickCardUserListener() {
             @Override
@@ -157,9 +153,7 @@ public class HomeFragment extends Fragment  {
         GetAllUsers();
 
         // floating waiting
-        mFlFloatingWaiting = mView.findViewById(R.id.floating_waiting);
-        mImgAvatarWaiting = mView.findViewById(R.id.img_floating_waiting);
-        handleShowFloatingWaiting();
+
         return mView;
     }
 
@@ -173,11 +167,7 @@ public class HomeFragment extends Fragment  {
             listenerRegistrationUser.remove();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        handleShowFloatingWaiting();
-    }
+
     private void createBottomSheetItem(){
          sheetItems = new ArrayList<BottomSheetItem>(){
             {
@@ -201,74 +191,47 @@ public class HomeFragment extends Fragment  {
         });
         fimaeBottomSheet.show(getParentFragmentManager(), "GoChat");
     }
-    public void handleShowFloatingWaiting() {
-        if(isShowFloatingWaiting) {
-            setFloatingWaiting();
-            mFlFloatingWaiting.setVisibility(View.VISIBLE);
-        }
-        else {
-            mFlFloatingWaiting.setVisibility(View.GONE);
-        }
-    }
-    private void setFloatingWaiting() {
-        if(ConnectRepo.getInstance().getUserLocal() != null){
-            String avatar = ConnectRepo.getInstance().getUserLocal().getAvatarUrl();
-            Picasso.get().load(avatar).placeholder(R.drawable.ic_default_avatar).into(mImgAvatarWaiting);
-        }
 
-        mFlFloatingWaiting.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getActionMasked()) {
-                    case ACTION_DOWN:
-                        xDown = event.getX();
-                        yDown = event.getY();
-                        break;
-                    case ACTION_MOVE:
-                        float movedX, movedY;
-                        movedX = event.getX();
-                        movedY = event.getY();
 
-                        float distanceX = movedX - xDown;
-                        float distanceY = movedY - yDown;
-
-                        mFlFloatingWaiting.setX(mFlFloatingWaiting.getX() + distanceX);
-                        mFlFloatingWaiting.setY(mFlFloatingWaiting.getY() + distanceY);
-                        break;
-                }
-                return true;
-            }
-        });
-    }
 
     ListenerRegistration listenerRegistrationUser;
 
     private void GetAllUsers(){
         String localUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        mLayoutShimmerUser.setVisibility(View.VISIBLE);
-        mShimmerWaitingUser.startShimmer();
+
         // get users from firebase
-        fimaeUserRef = firestore.collection("fimaers"); // lay het thu muc user ra
+        fimaeUserRef = firestore.collection("fimaers");
         listenerRegistrationUser = fimaeUserRef.addSnapshotListener((value, error) -> {
             if (error != null) {
                 // Xử lý lỗi
                 return;
             }
             mUsers.clear();
-            // Lặp qua các tài liệu (tin nhắn) và thêm vào danh sách
+            // Lặp qua các tài liệu (người dùng) và thêm vào danh sách
             for (QueryDocumentSnapshot document : value) {
                 Fimaers user = document.toObject(Fimaers.class);
-                // set local
-                if(user.getUid().equals(localUid)) ConnectRepo.getInstance().setUserLocal(user);
-                mUsers.add(user);
+                // Kiểm tra xem người dùng có phải là người dùng đang đăng nhập không
+                if (!user.getUid().equals(localUid)) {
+                    mUsers.add(user);
+                }
             }
-            mLayoutShimmerUser.setVisibility(View.GONE);
-            mShimmerWaitingUser.stopShimmer();
+
+            // Sắp xếp danh sách người dùng để người dùng mới được thêm vào ở đầu danh sách
+            Collections.sort(mUsers, new Comparator<Fimaers>() {
+                @Override
+                public int compare(Fimaers user1, Fimaers user2) {
+                    // So sánh theo thời gian tạo
+                    return Long.compare(user2.getTimeCreated().getDate(), user1.getTimeCreated().getDate());
+                }
+            });
+
             // Cập nhật giao diện người dùng (RecyclerView)
             userAdapter.notifyDataSetChanged();
         });
     }
-// ===== setting user =================================================================================
+
+
+    // ===== setting user =================================================================================
     private void settingUser(){
         // when click setting button
         View dialogSetting = getLayoutInflater().inflate(R.layout.bottom_sheet_setting, null);

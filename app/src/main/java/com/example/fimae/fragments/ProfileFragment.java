@@ -34,20 +34,24 @@ import com.example.fimae.activities.EditProfileActivity;
 import com.example.fimae.activities.PostMode;
 import com.example.fimae.activities.SettingActivity;
 import com.example.fimae.activities.ShortVideoActivity;
+import com.example.fimae.activities.StoryActivity;
 import com.example.fimae.adapters.GridAutoFitLayoutManager;
 import com.example.fimae.adapters.PostAdapter;
-import com.example.fimae.adapters.ShortAdapter.ShortsReviewAdapter;
 import com.example.fimae.adapters.ShortAdapter.ShortsReviewProfileAdapter;
 import com.example.fimae.adapters.SpacingItemDecoration;
+import com.example.fimae.adapters.StoryAdapter.StoryReviewAdapter;
+import com.example.fimae.adapters.StoryAdapter.StoryReviewProfileAdapter;
 import com.example.fimae.bottomdialogs.AvatarBottomSheetFragment;
 import com.example.fimae.bottomdialogs.PickImageBottomSheetFragment;
 import com.example.fimae.databinding.FragmentProfileBinding;
 import com.example.fimae.models.Fimaers;
 import com.example.fimae.models.Post;
 import com.example.fimae.models.shorts.ShortMedia;
+import com.example.fimae.models.story.Story;
 import com.example.fimae.repository.FimaerRepository;
 import com.example.fimae.repository.FollowRepository;
 import com.example.fimae.repository.ShortsRepository;
+import com.example.fimae.repository.StoryRepository;
 import com.example.fimae.service.FirebaseService;
 import com.example.fimae.utils.FileUtils;
 import com.example.fimae.viewmodels.ProfileViewModel;
@@ -67,12 +71,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -98,6 +100,7 @@ public class ProfileFragment extends Fragment {
 
     private PostAdapter postAdapter;
     ShortsReviewProfileAdapter shortsReviewProfileAdapter;
+    StoryReviewProfileAdapter storyReviewProfileAdapter;
 
     public static ProfileFragment newInstance(String uid) {
         Bundle args = new Bundle();
@@ -113,6 +116,8 @@ public class ProfileFragment extends Fragment {
         super.onDestroy();
         if(shortsReviewProfileAdapter != null)
             shortsReviewProfileAdapter.stopListening();
+        if(storyReviewProfileAdapter != null)
+            storyReviewProfileAdapter.stopListening();
     }
 
     @Override
@@ -139,15 +144,7 @@ public class ProfileFragment extends Fragment {
         {
             viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         }
-//        FollowRepository.getInstance().getFollowers(viewModel.getUid()).addOnCompleteListener(new OnCompleteListener<ArrayList<Fimaers>>() {
-//            @Override
-//            public void onComplete(@NonNull Task<ArrayList<Fimaers>> task) {
-//                if(task.isSuccessful() && task.getResult() != null){
-//                    int num = task.getResult().size();
-//                    binding.followerNum.setText(String.valueOf(num));
-//                }
-//            }
-//        });
+
         FollowRepository.getInstance().followRef.whereEqualTo("follower", viewModel.getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -256,30 +253,47 @@ public class ProfileFragment extends Fragment {
             }
         });
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 int position = tab.getPosition();
-                if (position == 0) {
-                    binding.postList.setAdapter(postAdapter);
-                    binding.postList.setLayoutManager(linearLayoutManager);
-                } else if (position == 1) {
-                    Query shortQuery = ShortsRepository.getInstance().getShortUserQuery(viewModel.getUid());
-                    shortsReviewProfileAdapter = new ShortsReviewProfileAdapter(
-                            shortQuery,
-                            new ShortsReviewProfileAdapter.IClickCardListener() {
-                                @Override
-                                public void onClickUser(ShortMedia video) {
-                                    Intent intent = new Intent(getContext(), ShortVideoActivity.class);
-                                    intent.putExtra("idVideo", video.getId()); // send id video
-                                    intent.putExtra("isProfile", true);
-                                    startActivity(intent);
+                switch (position) {
+                    case 0:
+                        binding.postList.setAdapter(postAdapter);
+                        binding.postList.setLayoutManager(linearLayoutManager);
+                        break;
+                    case 1:
+                        Query shortQuery = ShortsRepository.getInstance().getShortUserQuery(viewModel.getUid());
+                        shortsReviewProfileAdapter = new ShortsReviewProfileAdapter(
+                                shortQuery,
+                                new ShortsReviewProfileAdapter.IClickCardListener() {
+                                    @Override
+                                    public void onClickUser(ShortMedia video) {
+                                        Intent intent = new Intent(getContext(), ShortVideoActivity.class);
+                                        intent.putExtra("idVideo", video.getId());
+                                        intent.putExtra("isProfile", true);
+                                        startActivity(intent);
+                                    }
                                 }
-                            }
-                    );
-                    binding.postList.setAdapter(shortsReviewProfileAdapter);
-                    GridAutoFitLayoutManager gridLayoutManager = new GridAutoFitLayoutManager(getContext(), 100);
-                    binding.postList.setLayoutManager(gridLayoutManager);
+                        );
+                        binding.postList.setAdapter(shortsReviewProfileAdapter);
+                        GridAutoFitLayoutManager gridLayoutManager = new GridAutoFitLayoutManager(getContext(), 100);
+                        binding.postList.setLayoutManager(gridLayoutManager);
+                        break;
+                    case 2:
+                        Query storyQuery = StoryRepository.getInstance().getStoryUserQuery(viewModel.getUid());
+                        StoryReviewProfileAdapter storyReviewAdapter = new StoryReviewProfileAdapter(
+                                storyQuery,
+                                new StoryReviewProfileAdapter.IClickCardListener() {
+                                    @Override
+                                    public void onClickUser(Story story) {
+                                        Toast.makeText(getContext(), "The function is being updated", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                        );
+                        binding.postList.setAdapter(storyReviewAdapter);
+                        GridAutoFitLayoutManager storyLayoutManager = new GridAutoFitLayoutManager(getContext(), 100);
+                        binding.postList.setLayoutManager(storyLayoutManager);
+                        break;
                 }
             }
 

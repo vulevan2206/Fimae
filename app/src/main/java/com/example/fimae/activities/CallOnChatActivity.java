@@ -30,7 +30,6 @@ import java.util.List;
 public class CallOnChatActivity extends AppCompatActivity {
     ActivityCallOnChatBinding binding;
 
-    private int TIME_CALL = 5 * 60;
 
     private StringeeCall call;
 

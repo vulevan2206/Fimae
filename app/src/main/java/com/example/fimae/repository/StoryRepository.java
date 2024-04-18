@@ -20,7 +20,6 @@ import java.util.Date;
 
 public class StoryRepository {
     private static StoryRepository instance;
-
     public static StoryRepository getInstance() {
         if (instance == null)
             instance = new StoryRepository();
@@ -74,5 +73,8 @@ public class StoryRepository {
         // Lọc các story có thời gian đăng trong khoảng từ twentyFourHoursAgo đến now
         return storyColRef.whereGreaterThanOrEqualTo("timeCreated", twentyFourHoursAgo)
                 .orderBy("timeCreated", Query.Direction.DESCENDING);
+    }
+    public Query getStoryUserQuery(String uid) {
+        return storyColRef.whereEqualTo("uid", uid).orderBy("timeCreated", Query.Direction.DESCENDING);
     }
 }

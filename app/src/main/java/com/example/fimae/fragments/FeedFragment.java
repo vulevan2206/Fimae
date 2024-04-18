@@ -2,15 +2,19 @@ package com.example.fimae.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.fimae.activities.AuthenticationActivity;
@@ -51,6 +55,8 @@ public class FeedFragment extends Fragment {
     private ListenerRegistration postRef;
 
     private ShortFragmentPageAdapter shortFragmentPageAdapter;
+    private boolean isLoading = false;
+    private ProgressBar loadingProgressBar;
 
     ActivityResultLauncher<Intent> mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -87,8 +93,10 @@ public class FeedFragment extends Fragment {
             intent.putExtra("id", post.getPostId());
             startActivity(intent);
         });
+
+
         binding.postList.setAdapter(postAdapter);
-        postRef= FirebaseFirestore.getInstance().collection("posts").orderBy("timeCreated", Query.Direction.DESCENDING).addSnapshotListener((value, error) -> {
+        postRef= FirebaseFirestore.getInstance().collection("posts").orderBy("timeCreated", Query.Direction.ASCENDING).addSnapshotListener((value, error) -> {
             if (error != null) {
                 return;
             }
@@ -103,44 +111,53 @@ public class FeedFragment extends Fragment {
                             switch (post.getPostMode()){
                                 case PRIVATE:
                                     if(post.getPublisher().equals(FirebaseAuth.getInstance().getUid())){
-                                        posts.add(post);
-                                        if(posts.size() <=1){
+                                        posts.add(0, post);
+                                        if(posts.size() <= 1){
                                             postAdapter.addUpdate();
                                         }
-                                        else postAdapter.notifyItemInserted(posts.size() - 1);
-
+                                        else {
+                                            postAdapter.notifyItemInserted(0);
+                                        }
                                     }
-
                                     break;
+
                                 case FRIEND:
                                     if(post.getPublisher().equals(FirebaseAuth.getInstance().getUid())){
-                                        posts.add(post);
-                                        if(posts.size() <=1){
+                                        posts.add(0, post); // Thêm bài post mới vào đầu danh sách
+                                        if(posts.size() <= 1){
                                             postAdapter.addUpdate();
                                         }
-                                        else postAdapter.notifyItemInserted(posts.size() - 1);
+                                        else {
+                                            postAdapter.notifyItemInserted(0); // Thông báo cho RecyclerView về sự thay đổi ở vị trí đầu tiên
+                                        }
                                     }
                                     else{
                                         FollowRepository.getInstance().isFriend(post.getPublisher()).addOnSuccessListener(new OnSuccessListener<Boolean>() {
                                             @Override
                                             public void onSuccess(Boolean aBoolean) {
                                                 if (aBoolean){
-                                                    posts.add(post);
-                                                    if(posts.size() <=1){
+                                                    posts.add(0, post); // Thêm bài post mới vào đầu danh sách
+                                                    if(posts.size() <= 1){
                                                         postAdapter.addUpdate();
                                                     }
-                                                    else postAdapter.notifyItemInserted(posts.size() - 1);
+                                                    else {
+                                                        postAdapter.notifyItemInserted(0); // Thông báo cho RecyclerView về sự thay đổi ở vị trí đầu tiên
+                                                    }
                                                 }
                                             }
                                         });
                                     }
                                     break;
                                 case PUBLIC:
-                                    posts.add(post);
-                                    if(posts.size() <=1){
+                                    posts.add(0, post); // Thêm bài post mới vào đầu danh sách
+                                    if(posts.size() <= 1){
                                         postAdapter.addUpdate();
                                     }
-                                    else postAdapter.notifyItemInserted(posts.size() - 1);
+                                    else {
+                                        postAdapter.notifyItemInserted(0); // Thông báo cho RecyclerView về sự thay đổi ở vị trí đầu tiên
+                                    }
+                                    break;
+
                             }
                         }
                     case MODIFIED:

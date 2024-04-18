@@ -205,7 +205,8 @@ public class NewCommentAdapter extends FirestoreAdapter<NewCommentAdapter.ViewHo
 
     private void binding(CommentItemBinding binding, int position, Fimaers userInfo, String collection) {
         Glide.with(mContext).load(userInfo.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
-        binding.userName.setText(userInfo.getLastName());
+        String fullName = userInfo.getFirstName() + " " + userInfo.getLastName(); // Tạo chuỗi tên đầy đủ từ firstName và lastName
+        binding.userName.setText(fullName);
         CommentItemAdapter commentItemAdapter = commentItemAdapters.get(position);
         Comment currentComment = commentItemAdapter.getComment();
         binding.content.setText(currentComment.getContent());

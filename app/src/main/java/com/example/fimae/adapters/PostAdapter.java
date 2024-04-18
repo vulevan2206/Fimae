@@ -108,7 +108,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                     binding.genderAgeIcon.setBackgroundResource(R.drawable.shape_gender_border_pink);
                 }
                 binding.ageTextView.setText(String.valueOf(fimaers.calculateAge()));
-                binding.userName.setText(fimaers.getFirstName());
+                String fullname = fimaers.getFirstName() +" "+ fimaers.getLastName();
+                binding.userName.setText(fullname);
                 initListener(binding, currentPost, fimaers);
             }
         });

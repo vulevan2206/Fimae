@@ -10,7 +10,11 @@
             android:orientation="vertical">
             <include
                 android:id="@+id/appbar_layout"
-                layout="@layout/appbar_post" />
+                layout="@layout/appbar_post"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="loadAppBar" />
+
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
@@ -67,7 +71,6 @@
                         />
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/post_list"
-                            android:nestedScrollingEnabled="false"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             app:layout_constrainedHeight="true"
@@ -75,7 +78,11 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             android:layout_marginStart="10dp"
-                            android:layout_marginEnd="10dp" />
+                            android:layout_marginEnd="10dp"
+                            android:nestedScrollingEnabled="true"
+                            />
+
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.core.widget.NestedScrollView>
         </LinearLayout>
@@ -92,6 +99,7 @@
                 android:layout_height="55dp"
                 android:src="@drawable/add_post_image"
                 />
+
         </RelativeLayout>
     </FrameLayout>
 </layout>

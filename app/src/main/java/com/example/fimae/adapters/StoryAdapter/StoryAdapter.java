@@ -150,13 +150,11 @@ public class StoryAdapter extends FirestoreAdapter<StoryAdapter.StoryViewHolder>
             if (isAddStory) {
                 storyImage = itemView.findViewById(R.id.add_story_background);
                 storyAvatar = itemView.findViewById(R.id.add_story);
-                storyTitle = itemView.findViewById(R.id.add_story_title);
                 storyCard = itemView.findViewById(R.id.add_story_item_layout);
             } else {
                 // Initialize the views from the layout
                 storyImage = itemView.findViewById(R.id.story_image);
                 storyAvatar = itemView.findViewById(R.id.story_avatar);
-                storyTitle = itemView.findViewById(R.id.story_title);
                 storyCard = itemView.findViewById(R.id.story_item_layout);
             }
         }

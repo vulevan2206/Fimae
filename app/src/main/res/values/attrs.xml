@@ -5,7 +5,7 @@
         <attr name="iconSrc" format="reference" />
         <attr name="textString" format="string" />
     </declare-styleable>
-    <!-- res/values/story_item.xml -->
+
     <declare-styleable name="StoryItem">
         <attr name="storyImage" format="reference" />
         <attr name="storyTitle" format="string" />

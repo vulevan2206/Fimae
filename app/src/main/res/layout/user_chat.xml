@@ -77,5 +77,14 @@
         style="@style/regular_12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
+    <TextView
+        android:id="@+id/last_message_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@+id/last_message"
+        app:layout_constraintStart_toStartOf="@+id/last_message"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -76,7 +76,8 @@ public class SubCommentAdapter extends RecyclerView.Adapter<SubCommentAdapter.Vi
             Fimaers userInfo = result;
             if (userInfo != null) {
                 Picasso.get().load(userInfo.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
-                binding.userName.setText(userInfo.getLastName());
+                String fullName = userInfo.getFirstName() + " " + userInfo.getLastName(); // Tạo chuỗi tên đầy đủ từ firstName và lastName
+                binding.userName.setText(fullName);
                 if (!userInfo.isGender()) {
                     binding.itemUserIcGender.setImageResource(R.drawable.ic_male);
                     binding.itemUserLayoutGenderAge.setBackgroundResource(R.drawable.shape_gender_border_pink);
