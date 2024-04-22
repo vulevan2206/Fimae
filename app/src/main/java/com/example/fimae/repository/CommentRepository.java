@@ -75,14 +75,26 @@ public class CommentRepository {
 
     public Task<Boolean> deleteComment(String postId, Comment comment, String collection){
         TaskCompletionSource<Boolean> taskCompletionSource = new TaskCompletionSource<>();
-        getCommentRef(postId, collection).document(comment.getId()).delete().addOnCompleteListener(ss->{
-                taskCompletionSource.setResult(true);
-            }).addOnFailureListener(e->{
+        getCommentRef(postId, collection).document(comment.getId()).delete().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Xóa thành công
+                // Giảm số lượng bình luận của bài đăng đi 1
+                DocumentReference postRef = FirebaseFirestore.getInstance().collection("posts").document(postId);
+                postRef.update("numberOfComments", FieldValue.increment(-1))
+                        .addOnSuccessListener(aVoid -> {
+                            taskCompletionSource.setResult(true);
+                        })
+                        .addOnFailureListener(e -> {
+                            taskCompletionSource.setResult(false);
+                        });
+            } else {
+                // Xóa không thành công
                 taskCompletionSource.setResult(false);
-            });
+            }
+        });
         return taskCompletionSource.getTask();
-
     }
+
     private int findCommentItemAdapterById(List<CommentItemAdapter> commentItemAdapters, String targetId) {
         for (CommentItemAdapter commentItem : commentItemAdapters) {
             if (commentItem.getComment().getId().equals(targetId)) {

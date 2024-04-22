@@ -47,9 +47,9 @@ public class CallService {
         void onIncomingCallVideo(String typeCall, String callId);
     }
     ArrayList<CallClientListener> listeners = new ArrayList<>();
-     public void addListener(CallClientListener listener){
-         listeners.add(listener);
-     }
+    public void addListener(CallClientListener listener){
+        listeners.add(listener);
+    }
 
     public void removeListener(CallClientListener listener){
         listeners.remove(listener);

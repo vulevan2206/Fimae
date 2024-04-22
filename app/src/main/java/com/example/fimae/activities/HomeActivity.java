@@ -9,6 +9,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import com.example.fimae.CallOnChatActivity;
 import com.example.fimae.R;
 import com.example.fimae.adapters.ViewPagerAdapter;
 import com.example.fimae.service.CallService;
@@ -52,7 +53,7 @@ public class HomeActivity extends AppCompatActivity {
                     case R.id.action_feed:
                         mViewPager.setCurrentItem(1, false);
                         break;
-                    case R.id.action_date:
+                    case R.id.action_notification:
                         mViewPager.setCurrentItem(2, false);
                         break;
                     case R.id.action_chat:

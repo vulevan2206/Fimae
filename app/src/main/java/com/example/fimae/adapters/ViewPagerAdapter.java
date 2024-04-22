@@ -1,5 +1,8 @@
 package com.example.fimae.adapters;
 
+import android.media.RingtoneManager;
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -13,7 +16,6 @@ import com.example.fimae.fragments.ProfileFragment;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
 
-
     public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
     }
@@ -25,7 +27,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
             case 1:
                 return new FeedFragment();
             case 2:
-                    return new NotificationFragment();
+                return new NotificationFragment();
             case 3:
                 return new ChatFragment();
             case 4:
@@ -38,5 +40,13 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     @Override
     public int getItemCount() {
         return 5;
+    }
+    public NotificationFragment getNotificationFragment() {
+        Fragment fragment = createFragment(2); // Assuming NotificationFragment is at position 2
+        if (fragment instanceof NotificationFragment) {
+            return (NotificationFragment) fragment;
+        } else {
+            return null; // Return null if the fragment is not a NotificationFragment
+        }
     }
 }

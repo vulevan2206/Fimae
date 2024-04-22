@@ -31,6 +31,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
@@ -190,26 +191,42 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             binding.commentNumber.setText(String.valueOf(updatePost.getNumberOfComments()));
             binding.likeNumber.setText(updatePost.getNumberTrue());
 
-            if(updatePost.getLikes().containsKey(currentPost.getPublisher()) && Boolean.TRUE.equals(updatePost.getLikes().get(currentPost.getPublisher()))){
-                binding.icLike.setImageResource(R.drawable.ic_heart1);
+            // Lấy UID của người dùng hiện tại từ FirebaseAuth
+            FirebaseAuth mAuth = FirebaseAuth.getInstance();
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            String currentUserUid;
+            if (currentUser != null) {
+                currentUserUid = currentUser.getUid();
+            } else {
+                // Xử lý khi người dùng chưa đăng nhập
+                return; // hoặc thực hiện hành động khác tùy thuộc vào yêu cầu của bạn
+            }
+
+            // Kiểm tra xem người dùng đã thích bài viết này chưa và xử lý sự kiện khi người dùng nhấp vào nút thích
+            if (updatePost.getLikes().containsKey(currentUserUid) && Boolean.TRUE.equals(updatePost.getLikes().get(currentUserUid))) {
+                // Nếu người dùng đã thích bài viết
+                binding.icLike.setImageResource(R.drawable.ic_heart1); // Hiển thị icon thích (màu đỏ)
                 binding.icLike.setOnClickListener(view -> {
-                    String path = "likes." + fimaers.getUid();
-                    binding.icLike.setImageResource(R.drawable.ic_heart1);
+                    String path = "likes." + currentUserUid;
+                    binding.icLike.setImageResource(R.drawable.ic_heart_gray); // Chuyển sang icon chưa thích (màu xám)
                     reference.document(currentPost.getPostId()).update(
                             path, false
                     );
                 });
-            }
-            else {
-                binding.icLike.setImageResource(R.drawable.ic_heart_gray);
+            } else {
+                // Nếu người dùng chưa thích bài viết
+                binding.icLike.setImageResource(R.drawable.ic_heart_gray); // Hiển thị icon chưa thích (màu xám)
                 binding.icLike.setOnClickListener(view -> {
-                    String path = "likes." + fimaers.getUid();
-                    binding.icLike.setImageResource(R.drawable.ic_heart1);
+                    String path = "likes." + currentUserUid;
+                    binding.icLike.setImageResource(R.drawable.ic_heart1); // Chuyển sang icon thích (màu đỏ)
                     reference.document(currentPost.getPostId()).update(
                             path, true
                     );
                 });
             }
+
+
+
             binding.chat.setOnClickListener(view -> {
                 Intent intent = new Intent(mContext, DetailPostActivity.class);
                 intent.putExtra("id", currentPost.getPostId());

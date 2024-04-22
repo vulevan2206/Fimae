@@ -1,25 +1,29 @@
 package com.example.fimae.activities;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.example.fimae.R;
+import com.example.fimae.models.Conversation;
 import com.example.fimae.models.Report;
 import com.example.fimae.repository.ChatRepository;
 import com.example.fimae.repository.ConnectRepo;
@@ -114,7 +118,8 @@ public class CallActivity extends AppCompatActivity {
         btnMute = findViewById(R.id.btn_mute);
         btnReject = findViewById(R.id.btn_reject);
         btnEnd = findViewById(R.id.btn_end);
-
+        tvDescriptionCall = findViewById(R.id.tv_des_call);
+        frmTextLike = findViewById(R.id.frame_text_like);
 
         btnSpeaker.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -224,7 +229,9 @@ public class CallActivity extends AppCompatActivity {
             return;
         }
         initCall();
-
+        // appbar ==================================================================
+        btnClose = findViewById(R.id.btn_close_appbar);
+        btnReport = findViewById(R.id.btn_report_appbar);
         btnClose.setBackgroundResource(R.drawable.ic_logout);
 
         btnClose.setOnClickListener(v -> {
@@ -239,7 +246,29 @@ public class CallActivity extends AppCompatActivity {
         });
 
         // timer ==================================================================
+        layoutTimer = findViewById(R.id.layout_timer);
 
+        timerService = new TimerService(
+                TIME_CALL,
+                findViewById(R.id.pbTimer),
+                findViewById(R.id.tv_time_connect),
+                new TimerService.IOnTimeUp() {
+                    @Override
+                    public void onTimeUp() {
+                        if(!isLiked) {
+                            // neu chua like thi dung khi het thoi gian
+                            onEndCall();
+                            timerService.onDestroy();
+                        }
+                        else {
+                            // neu like roi thi an di
+                            layoutTimer.setVisibility(View.GONE);
+                        }
+                    }
+                }
+        );
+        timerService.setTimeInit();
+        timerService.startTimerSetUp();
     }
 
     @Override
@@ -475,7 +504,7 @@ public class CallActivity extends AppCompatActivity {
         Toast.makeText(this, value, Toast.LENGTH_LONG).show();
     }
 
-//== report ===============================================================================
+    //== report ===============================================================================
     AppCompatButton mBtnKhongThich;
     AppCompatButton mBtnQuayRoi;
     AppCompatButton mBtnBatHopPhap;

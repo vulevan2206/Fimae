@@ -27,6 +27,7 @@ public class ShortMedia {
     private HashMap<String, Boolean> usersLiked;
 
     private HashMap<String, Date> usersWatched;
+    private static final String PACKAGE_NAME = "com.example.fimae";
 
     public ShortMedia() {
         setUsersLiked(new HashMap<String, Boolean>());

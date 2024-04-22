@@ -1,4 +1,4 @@
-package com.example.fimae.activities;
+package com.example.fimae;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.fimae.R;
 import com.example.fimae.databinding.ActivityCallOnChatBinding;
 import com.example.fimae.repository.ConnectRepo;
 import com.example.fimae.service.CallService;
@@ -30,6 +29,7 @@ import java.util.List;
 public class CallOnChatActivity extends AppCompatActivity {
     ActivityCallOnChatBinding binding;
 
+    private int TIME_CALL = 5 * 60;
 
     private StringeeCall call;
 

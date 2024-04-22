@@ -28,6 +28,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
 
     <application
         android:name=".FimaeApp"
@@ -45,8 +47,9 @@
             android:name=".activities.DisabledUserActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.CallOnChatActivity"
+            android:name=".CallOnChatActivity"
             android:exported="false" />
+
 
         <activity
             android:name=".activities.PrivacyActivity"
@@ -55,6 +58,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBvm9N9gHEq0ru7PjTCUDvtazOxvwoz0N0" />
+
+
         <activity
             android:name=".activities.AddShortActivity"
             android:exported="false" />
@@ -144,13 +149,21 @@
         <!-- android:supportsRtl="true" -->
         <!-- android:theme="@style/Theme.Fimae" -->
         <!-- tools:targetApi="31"> -->
+
         <meta-data
             android:name="com.google.android.actions"
             android:resource="@drawable/shape_gender_border_blue" />
         <meta-data
             android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
+            android:resource="@array/preloaded_fonts" /> <!-- <activity -->
+        <!-- android:name=".activities.ChatActivity" -->
+        <!-- android:exported="false" -->
+        <!-- android:label="@string/title_activity_chat" -->
+        <!-- android:theme="@style/Theme.Fimae.NoActionBar" /> -->
 
+        <activity
+            android:name=".activities.CallActivity"
+            android:exported="false" />
         <activity
             android:name=".activities.HomeActivity"
             android:exported="true" />
