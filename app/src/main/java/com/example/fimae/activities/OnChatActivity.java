@@ -89,15 +89,28 @@ public class OnChatActivity extends AppCompatActivity {
         // call
         mTvStatusConnect = findViewById(R.id.status_appbar);
         try{
-            if(fimaer != null){
+            if (fimaer != null) {
                 String status = "Không hoạt động";
-                if(fimaer.isOnline()){
+                if (fimaer.isOnline()) {
                     status = "Đang hoạt động";
-                } else if(fimaer.getLastActiveMinuteAgo() <=600000) {
-                    status = "Hoạt động " + fimaer.getLastActiveMinuteAgo() + " phút trước";
+                } else {
+                    int lastActiveMinutes = fimaer.getLastActiveMinuteAgo();
+                    if (lastActiveMinutes <= 60) {
+                        status = "Hoạt động " + lastActiveMinutes + " phút trước";
+                    }
+                    else if(lastActiveMinutes >1440){
+                        status = "Hoạt động " + lastActiveMinutes + " ngày trước";
+                    }
+                    else {
+                        // Chuyển đổi phút thành giờ và phút
+                        int hours = lastActiveMinutes / 60;
+                        int minutes = lastActiveMinutes % 60;
+                        status = "Hoạt động " + hours + " giờ ";
+                    }
                 }
                 mTvStatusConnect.setText(status);
             }
+
         }catch (Exception e) {
             mTvStatusConnect.setText("Không hoạt động");
         }
