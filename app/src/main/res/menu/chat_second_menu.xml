@@ -3,7 +3,7 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/option_call_video"
-        android:icon="@drawable/ic_call_in_chat"
+        android:icon="@drawable/videocall"
         app:showAsAction="ifRoom"
         android:title="CallVideo"
         android:tooltipText="CallVideo"
