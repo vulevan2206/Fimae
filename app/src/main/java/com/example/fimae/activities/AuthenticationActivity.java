@@ -10,12 +10,14 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.os.Bundle;
+
 import com.example.fimae.R;
 import com.example.fimae.models.DisableUser;
 import com.example.fimae.repository.AuthRepository;
@@ -43,10 +45,11 @@ import java.util.Date;
 public class AuthenticationActivity extends AppCompatActivity {
 
     private EditText editTextEmail, editTextPassword, editTextRepeatPass;
-    TextInputLayout repeatPassLayout;
+    TextInputLayout repeatPassLayout, passLayout;
+
     Button btnSignIn;
     ImageButton btnGoogleSignIn;
-    TextView signUpTextView;
+    TextView signUpTextView, forgotPasswordTextView;
     FirebaseAuth auth = FirebaseAuth.getInstance();
     AuthRepository authRepository = AuthRepository.getInstance();
     ProgressBar progressBar;
@@ -56,7 +59,8 @@ public class AuthenticationActivity extends AppCompatActivity {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     CollectionReference fimaeUsersRefer = firestore.collection("fimae-users");
     DatabaseReference usersRef = database.getReference("fimae-users");
-    boolean isRegister = false;
+    boolean isRegister = false, isForgotPass = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,8 +70,10 @@ public class AuthenticationActivity extends AppCompatActivity {
         editTextPassword = findViewById(R.id.editTextPassword);
         editTextRepeatPass = findViewById(R.id.editTextRepeatPassword);
         repeatPassLayout = findViewById(R.id.repeatPassInput);
+        passLayout = findViewById(R.id.pass_input_layout);
         signUpTextView = findViewById(R.id.textViewRegister);
         btnSignIn = findViewById(R.id.buttonLogin);
+        forgotPasswordTextView = findViewById(R.id.textViewForgotPassword);
         btnGoogleSignIn = findViewById(R.id.googleImgBtn);
         progressBar = findViewById(R.id.progressBar);
         contentLayout = findViewById(R.id.content_layout);
@@ -76,7 +82,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                 .requestEmail()
                 .build();
 
-        mGoogleSignInClient = GoogleSignIn.getClient(this,gso);
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         btnGoogleSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,18 +95,52 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //signUp();
-                if(!isRegister)
-                {
+                if (!isRegister) {
                     repeatPassLayout.setVisibility(View.VISIBLE);
+                    editTextPassword.setVisibility(View.VISIBLE);
+                    passLayout.setVisibility(View.VISIBLE);
                     btnSignIn.setText("Register");
                     signUpTextView.setText("Has an account? Login here.");
+                    forgotPasswordTextView.setVisibility(View.VISIBLE);
+                    forgotPasswordTextView.setText("Forgot password? Reset here.");
                     isRegister = true;
-                }
-                else
-                {
+                    isForgotPass = false;
+                } else {
                     repeatPassLayout.setVisibility(View.GONE);
                     btnSignIn.setText("Login");
                     signUpTextView.setText("New user? Register Now");
+                    isRegister = false;
+                    forgotPasswordTextView.setVisibility(View.VISIBLE);
+                    isForgotPass = false;
+                }
+
+            }
+        });
+        forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isForgotPass) {
+                    repeatPassLayout.setVisibility(View.GONE);
+                    forgotPasswordTextView.setText("Has an account? Login here.");
+                    editTextPassword.setVisibility(View.GONE);
+                    passLayout.setVisibility(View.GONE);
+                    btnSignIn.setText("RESET PASSWORD");
+                    signUpTextView.setVisibility(View.VISIBLE);
+                    signUpTextView.setText("New user? Register Now!");
+                    isForgotPass = true;
+                    isRegister = false;
+                } else {
+                    repeatPassLayout.setVisibility(View.GONE);
+
+                    signUpTextView.setVisibility(View.VISIBLE);
+                    editTextPassword.setVisibility(View.VISIBLE);
+                    forgotPasswordTextView.setText("Forgot password? Reset here.");
+
+                    signUpTextView.setText("New user? Register Now!");
+                    passLayout.setVisibility(View.VISIBLE);
+                    btnSignIn.setText("Login");
+
+                    isForgotPass = false;
                     isRegister = false;
                 }
 
@@ -109,41 +149,44 @@ public class AuthenticationActivity extends AppCompatActivity {
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!isRegister)
-                {
-                    signIn();
-                }
-                else
-                {
+                if (isRegister) {
                     signUp();
+                } else if (isForgotPass) {
+                    resetPass();
+                } else {
+                    signIn();
                 }
             }
         });
+
 
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
             successAuthentication();
         }
     }
+
     int RC_SIGN_IN = 9001;
 
     private void signInWithGoogle() {
         Intent intent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(intent,RC_SIGN_IN);
+        startActivityForResult(intent, RC_SIGN_IN);
     }
 
-    void successAuthentication(){
+    void successAuthentication() {
 
         Intent intent = new Intent(AuthenticationActivity.this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
-    void navToUpdateProfile(){
+
+    void navToUpdateProfile() {
         Intent intent = new Intent(AuthenticationActivity.this, CreateProfileActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
-    private void signIn(){
+
+    private void signIn() {
         String email = String.valueOf(editTextEmail.getText());
         String password = String.valueOf(editTextPassword.getText());
         progressBar.setVisibility(View.VISIBLE);
@@ -152,7 +195,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onSignInSuccess(FirebaseUser user) {
                 FirebaseFirestore.getInstance().collection("user_disable")
-                        .document(user.getUid()+"USER")
+                        .document(user.getUid() + "USER")
                         .get()
                         .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
@@ -161,7 +204,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                     DocumentSnapshot documentSnapshot = task.getResult();
                                     if (documentSnapshot != null) {
                                         DisableUser disableUser = documentSnapshot.toObject(DisableUser.class);
-                                        if (disableUser != null && disableUser.getTimeEnd().after(new Date()) && disableUser.getType() != null &&  disableUser.getType().equals("USER")) {
+                                        if (disableUser != null && disableUser.getTimeEnd().after(new Date()) && disableUser.getType() != null && disableUser.getType().equals("USER")) {
                                             Intent intent = new Intent(AuthenticationActivity.this, DisabledUserActivity.class);
                                             intent.putExtra("disableId", user.getUid());
                                             intent.putExtra("type", "USER");
@@ -178,20 +221,43 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onSignInError(String errorMessage) {
                 editTextEmail.setError(errorMessage);
-                Toast.makeText(getApplicationContext(),errorMessage,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Email hoặc mật khẩu không đúng", Toast.LENGTH_SHORT).show();
             }
         });
         progressBar.setVisibility(View.GONE);
         contentLayout.setVisibility(View.VISIBLE);
 
     }
+
+    private void resetPass() {
+        String email = editTextEmail.getText().toString();
+
+        try{
+            auth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(AuthenticationActivity.this, "Đã gửi email đặt lại mật khẩu đến " + email, Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(AuthenticationActivity.this, "Đặt lại mật khẩu thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        }catch (Exception e){
+            Toast.makeText(getApplicationContext(), "Lỗi rồi", Toast.LENGTH_SHORT).show();
+        }
+
+
+
+    }
+
     private void signUp() {
         String email = String.valueOf(editTextEmail.getText());
         String password = String.valueOf(editTextPassword.getText());
         String repeatPass = String.valueOf(editTextRepeatPass.getText());
         if (!(email.isEmpty() && password.isEmpty() && repeatPass.isEmpty())) {
-            if(!repeatPass.equals(password))
-            {
+            if (!repeatPass.equals(password)) {
                 editTextRepeatPass.setError("Vui lòng nhập lại mật khẩu giống phía trên");
                 return;
             }
@@ -204,7 +270,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                 @Override
                 public void onSignUpError(String errorMessage) {
                     editTextEmail.setError(errorMessage);
-                    Toast.makeText(getApplicationContext(), errorMessage,Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
@@ -213,21 +279,19 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == RC_SIGN_IN)
-        {
-            if(resultCode == 0)
-            {
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == 0) {
 
             }
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data)
                     .addOnCompleteListener(new OnCompleteListener<GoogleSignInAccount>() {
                         @Override
                         public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
-                            if(task.isSuccessful())
-                            {
+                            if (task.isSuccessful()) {
                                 try {
                                     GoogleSignInAccount account = task.getResult(ApiException.class);
                                     authRepository.googleAuth(account.getIdToken(), new AuthRepository.GoogleSignInCallback() {
@@ -235,17 +299,19 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         public void onSignInSuccess(FirebaseUser user) {
                                             successAuthentication();
                                         }
+
                                         @Override
                                         public void onFirstTimeSignIn(FirebaseUser user) {
                                             navToUpdateProfile();
                                         }
+
                                         @Override
                                         public void onSignInError(String errorMessage) {
-                                            Toast.makeText(getApplicationContext(), errorMessage,Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                 } catch (ApiException e) {
-                                    Toast.makeText(getApplicationContext(), e.getMessage(),Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 
                                 }
                             }
@@ -256,4 +322,4 @@ public class AuthenticationActivity extends AppCompatActivity {
     }
 
 
-    }
+}

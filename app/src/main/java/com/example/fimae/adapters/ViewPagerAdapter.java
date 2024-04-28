@@ -26,11 +26,10 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
         switch (position){
             case 1:
                 return new FeedFragment();
+
             case 2:
-                return new NotificationFragment();
-            case 3:
                 return new ChatFragment();
-            case 4:
+            case 3:
                 return new ProfileFragment();
             default:
                 return new HomeFragment();

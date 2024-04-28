@@ -48,9 +48,7 @@
             android:layout_height="90dp"
             android:src="@drawable/ic_default_avatar" />
 
-        <Space
-            android:layout_width="88dp"
-            android:layout_height="0dp" />
+
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/img_avatar_remote"
@@ -88,10 +86,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal">
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
+
             <ImageButton
                 android:id="@+id/btn_speaker"
                 android:layout_width="wrap_content"
@@ -100,20 +95,14 @@
                 android:background="@drawable/background_btn_speaker_off"
                 android:padding="20dp" />
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
+
             <ImageButton
                 android:id="@+id/btn_end"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:background="@drawable/background_btn_call"
                 android:padding="0dp" />
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
+
             <ImageButton
                 android:id="@+id/btn_mute"
                 android:layout_width="wrap_content"
@@ -121,10 +110,7 @@
                 android:layout_margin="10dp"
                 android:background="@drawable/background_btn_mic_on"
                 android:padding="20dp" />
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
+
         </LinearLayout>
 
         <LinearLayout
@@ -143,9 +129,7 @@
                 android:background="@drawable/background_btn_call"
                 android:padding="20dp" />
 
-            <Space
-                android:layout_width="100dp"
-                android:layout_height="0dp" />
+
 
             <ImageButton
                 android:id="@+id/btn_answer"

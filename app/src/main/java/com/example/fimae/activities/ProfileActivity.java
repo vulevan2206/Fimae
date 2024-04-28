@@ -49,17 +49,22 @@ public class ProfileActivity extends AppCompatActivity {
             });
 
         }
+
         follow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(follow.getText().equals("Theo dõi")){
-                    FollowRepository.getInstance().follow(uid);
+                    // Thực hiện theo dõi người dùng và gửi tin nhắn mặc định
+                    FollowRepository.getInstance().followWithDefaultMessage(uid);
                 }
                 else {
-                    FollowRepository.getInstance().unFollow(uid);
+                    // Thực hiện bỏ theo dõi người dùng
+                    FollowRepository.getInstance().unFollowWithDefaultMessage(uid);
                 }
             }
         });
+
+
         chat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

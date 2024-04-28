@@ -123,7 +123,20 @@ public class ConversationAdapter extends FirestoreAdapter<ConversationAdapter.Vi
         }
     }
 
-
+    public void moveToTop(int position) {
+        Conversation selectedConversation = conversations.get(position);
+        conversations.remove(position);
+        conversations.add(0, selectedConversation);
+        notifyDataSetChanged();
+    }
+    public int getSelectedConversationPosition(Conversation selectedConversation) {
+        for (int i = 0; i < conversations.size(); i++) {
+            if (conversations.get(i).getId().equals(selectedConversation.getId())) {
+                return i; // Trả về vị trí của cuộc trò chuyện trong danh sách
+            }
+        }
+        return -1; // Trả về -1 nếu không tìm thấy cuộc trò chuyện trong danh sách
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

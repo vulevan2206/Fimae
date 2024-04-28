@@ -53,14 +53,11 @@ public class HomeActivity extends AppCompatActivity {
                     case R.id.action_feed:
                         mViewPager.setCurrentItem(1, false);
                         break;
-                    case R.id.action_notification:
+                    case R.id.action_chat:
                         mViewPager.setCurrentItem(2, false);
                         break;
-                    case R.id.action_chat:
-                        mViewPager.setCurrentItem(3, false);
-                        break;
                     case R.id.action_profile:
-                        mViewPager.setCurrentItem(4, false);
+                        mViewPager.setCurrentItem(3, false);
                         break;
                 }
                 return true;

@@ -49,6 +49,9 @@
         <activity
             android:name=".CallOnChatActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.CallVideoActivity"
+            android:exported="false" />
 
 
         <activity
@@ -59,7 +62,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBvm9N9gHEq0ru7PjTCUDvtazOxvwoz0N0" />
 
-
+        <activity
+            android:name=".activities.ChangePasswordActivity"
+            android:exported="false" />
         <activity
             android:name=".activities.AddShortActivity"
             android:exported="false" />

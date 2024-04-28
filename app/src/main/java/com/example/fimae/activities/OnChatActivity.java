@@ -78,7 +78,14 @@ public class OnChatActivity extends AppCompatActivity {
         initBottomSheetItems();
         initListeners();
         initMessagesListener();
+        TextView nameTextView = findViewById(R.id.status_name);
 
+        // Kiểm tra xem đối tượng fimaer có tồn tại hay không
+        if (fimaer != null) {
+            // Lấy tên của người được nhắn từ đối tượng fimaer và đặt nội dung cho TextView
+            String userName = fimaer.getName(); // Giả sử getName() là phương thức để lấy tên
+            nameTextView.setText(userName);
+        }
         // call
         mTvStatusConnect = findViewById(R.id.status_appbar);
         try{
@@ -86,7 +93,7 @@ public class OnChatActivity extends AppCompatActivity {
                 String status = "Không hoạt động";
                 if(fimaer.isOnline()){
                     status = "Đang hoạt động";
-                } else if(fimaer.getLastActiveMinuteAgo() <=60) {
+                } else if(fimaer.getLastActiveMinuteAgo() <=600000) {
                     status = "Hoạt động " + fimaer.getLastActiveMinuteAgo() + " phút trước";
                 }
                 mTvStatusConnect.setText(status);
@@ -190,6 +197,9 @@ public class OnChatActivity extends AppCompatActivity {
                     return true;
                 case R.id.option_call:
                     initCall();
+                    return true;
+                case R.id.option_call_video:
+                    initCallVideo();
                     return true;
                 default:
                     return super.onOptionsItemSelected(item);
@@ -331,7 +341,12 @@ public class OnChatActivity extends AppCompatActivity {
         intent.putExtra("isIncomingCall", false);
         startActivity(intent);
     }
-
+    private void initCallVideo() {
+        Intent intent = new Intent(this, CallVideoActivity.class);
+        intent.putExtra("to", remoteUserToken);
+        intent.putExtra("isIncomingCallVideo", false);
+        startActivity(intent);
+    }
     private void getRemoteUserId() {
         getConversationById(conversationId).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -365,65 +380,4 @@ public class OnChatActivity extends AppCompatActivity {
         });
         return taskCompletionSource.getTask();
     }
-
-
-/*    private void initStringeeConnection(){
-        client = new StringeeClient(this);
-        client.setConnectionListener(new StringeeConnectionListener() {
-            @Override
-            public void onConnectionConnected(StringeeClient stringeeClient, boolean b) {
-                runOnUiThread(()->{
-                    //mTvStatusConnect.setText("Bạn là " + stringeeClient.getUserId());
-                });
-            }
-
-            @Override
-            public void onConnectionDisconnected(StringeeClient stringeeClient, boolean b) {
-                runOnUiThread(()->{
-                    //mTvStatusConnect.setText("Mất kết nối");
-                });
-            }
-
-            @Override
-            public void onIncomingCall(StringeeCall stringeeCall) {
-                runOnUiThread(()->{
-                    callMap.put(stringeeCall.getCallId(), stringeeCall);
-                    // set user remote
-                    ConnectRepo.getInstance().setUserRemoteById(stringeeCall.getFrom());
-                    // navigate to call screen
-                    Intent intent = new Intent(OnChatActivity.this, CallOnChatActivity.class);
-                    intent.putExtra("callId", stringeeCall.getCallId());
-                    intent.putExtra("isIncomingCall", true);
-                    startActivity(intent);
-                });
-            }
-
-            @Override
-            public void onIncomingCall2(StringeeCall2 stringeeCall2) {
-            }
-
-            @Override
-            public void onConnectionError(StringeeClient stringeeClient, StringeeError stringeeError) {
-                runOnUiThread(()->{
-                    //mTvStatusConnect.setText("Lỗi kết nối");
-                });
-            }
-
-            @Override
-            public void onRequestNewToken(StringeeClient stringeeClient) {
-
-            }
-
-            @Override
-            public void onCustomMessage(String s, JSONObject jsonObject) {
-
-            }
-
-            @Override
-            public void onTopicMessage(String s, JSONObject jsonObject) {
-
-            }
-        });
-        client.connect(ConnectRepo.getInstance().getUserLocal().getToken());
-    }*/
 }

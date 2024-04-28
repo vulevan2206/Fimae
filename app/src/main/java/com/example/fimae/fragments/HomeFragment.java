@@ -1,4 +1,5 @@
-package com.example.fimae.fragments;
+
+        package com.example.fimae.fragments;
 
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_MOVE;
@@ -8,10 +9,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -39,48 +43,53 @@ import com.example.fimae.repository.FimaerRepository;
 import com.example.fimae.repository.FollowRepository;
 import com.example.fimae.repository.PostRepository;
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.slider.RangeSlider;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.squareup.picasso.Picasso;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import org.checkerframework.checker.units.qual.A;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class HomeFragment extends Fragment  {
-
-    // when click call button
-    // navigate to waiting screen ( with par to distinguish screen type)
-    // delay 5s
-    // if dont have user remote => wait
-    // if you have user
-    // navigate to call screen
+public class HomeFragment extends Fragment {
 
     private FirebaseFirestore firestore;
     private CollectionReference fimaeUserRef;
 
     private View mView;
     private RecyclerView mRcvUsers;
+    private RecyclerView mRcvMe;
     private HomeActivity homeActivity;
     private UserHomeViewAdapter userAdapter;
     private ArrayList<Fimaers> mUsers;
-
+    private ArrayList<Fimaers> followingUsers;
+    private ArrayList<Fimaers> notFollowingUsers;
     private LinearLayout mBtnChat;
     private LinearLayout mBtnCallVoice;
     private LinearLayout mBtnCallVideo;
     private ImageButton mBtnNoti;
     private ImageButton mBtnSetting;
-    // setting bottom sheet
+    // Setting bottom sheet
     private RangeSlider mRangeAges;
     private TextView mTvRangeAges;
     // btn male
@@ -97,8 +106,8 @@ public class HomeFragment extends Fragment  {
     private TextView mTvBoth;
     // btn Hoan thanh
     private AppCompatButton mBtnFinish;
+    private Button btn_setting;
     private GenderMatch genderMatch;
-
 
     float xDown = 0, yDown = 0;
     private FimaeBottomSheet fimaeBottomSheet;
@@ -107,6 +116,7 @@ public class HomeFragment extends Fragment  {
     private ListenerRegistration mlisten;
 
     static public boolean isShowFloatingWaiting = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -131,13 +141,17 @@ public class HomeFragment extends Fragment  {
 
         // recycleView: List users
         mRcvUsers = mView.findViewById(R.id.recycler_users);
+        mRcvMe=mView.findViewById(R.id.recycle_me);
         homeActivity = (HomeActivity) getActivity();
         mUsers = new ArrayList<>();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(homeActivity);
         mRcvUsers.setLayoutManager(linearLayoutManager);
 
+        notFollowingUsers = new ArrayList<>();
+        LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(homeActivity);
+        followingUsers = new ArrayList<>();
+        LinearLayoutManager linearLayoutManager2 = new LinearLayoutManager(homeActivity);
         userAdapter = new UserHomeViewAdapter(this.getContext());
-        // shimmer
 
         userAdapter.setData(mUsers, new UserHomeViewAdapter.IClickCardUserListener() {
             @Override
@@ -148,12 +162,9 @@ public class HomeFragment extends Fragment  {
             }
         });
         mRcvUsers.setAdapter(userAdapter);
-
+        mRcvMe.setLayoutManager(new LinearLayoutManager(getContext()));
         firestore = FirebaseFirestore.getInstance();
-        GetAllUsers();
-
-        // floating waiting
-
+        GetMyUsers();
         return mView;
     }
 
@@ -162,14 +173,10 @@ public class HomeFragment extends Fragment  {
         super.onDestroy();
         if (mlisten != null)
             mlisten.remove();
-
-        if(listenerRegistrationUser != null)
-            listenerRegistrationUser.remove();
     }
 
-
     private void createBottomSheetItem(){
-         sheetItems = new ArrayList<BottomSheetItem>(){
+        sheetItems = new ArrayList<BottomSheetItem>(){
             {
                 add(new BottomSheetItem(R.drawable.ic_chat_dots, "Tới cuộc trò chuyện"));
                 add(new BottomSheetItem(R.drawable.ic_user_block, "Hủy theo dõi"));
@@ -196,51 +203,47 @@ public class HomeFragment extends Fragment  {
 
     ListenerRegistration listenerRegistrationUser;
 
-    private void GetAllUsers(){
-        String localUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // get users from firebase
+    private void GetMyUsers() {
+        ArrayList<Fimaers> meUsers = new ArrayList<>();
+        firestore = FirebaseFirestore.getInstance();
         fimaeUserRef = firestore.collection("fimaers");
-        listenerRegistrationUser = fimaeUserRef.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                // Xử lý lỗi
-                return;
-            }
-            mUsers.clear();
-            // Lặp qua các tài liệu (người dùng) và thêm vào danh sách
-            for (QueryDocumentSnapshot document : value) {
-                Fimaers user = document.toObject(Fimaers.class);
-                // Kiểm tra xem người dùng có phải là người dùng đang đăng nhập không
-                if (!user.getUid().equals(localUid)) {
-                    mUsers.add(user);
-                }
-            }
-
-            // Sắp xếp danh sách người dùng để người dùng mới được thêm vào ở đầu danh sách
-            Collections.sort(mUsers, new Comparator<Fimaers>() {
-                @Override
-                public int compare(Fimaers user1, Fimaers user2) {
-                    // So sánh theo thời gian tạo
-                    return Long.compare(user2.getTimeCreated().getDate(), user1.getTimeCreated().getDate());
-                }
-            });
-
-            // Cập nhật giao diện người dùng (RecyclerView)
-            userAdapter.notifyDataSetChanged();
-        });
+        String localUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        fimaeUserRef.document(localUid).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Fimaers currentUser = documentSnapshot.toObject(Fimaers.class);
+                        if (currentUser != null) {
+                            meUsers.add(currentUser);
+                            UserHomeViewAdapter meUserAdapter = new UserHomeViewAdapter(getContext());
+                            meUserAdapter.setData(meUsers, new UserHomeViewAdapter.IClickCardUserListener() {
+                                @Override
+                                public void onClickUser(Fimaers user) {
+                                    Intent intent = new Intent(getContext(), ProfileActivity.class);
+                                    intent.putExtra("uid", user.getUid());
+                                    startActivity(intent);
+                                }
+                            });
+                            mRcvMe.setAdapter(meUserAdapter);
+                            meUserAdapter.notifyDataSetChanged();
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle error
+                    Log.d("Loi", "Error getting current user document: ", e);
+                });
     }
 
 
-    // ===== setting user =================================================================================
-    private void settingUser(){
-        // when click setting button
-        View dialogSetting = getLayoutInflater().inflate(R.layout.bottom_sheet_setting, null);
 
+    // ===== setting user =================================================================================
+    private void settingUser() {
+        View dialogSetting = getLayoutInflater().inflate(R.layout.bottom_sheet_setting, null);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this.getContext());
         bottomSheetDialog.setContentView(dialogSetting);
         bottomSheetDialog.show();
 
-        // set match components
+// set match components
         mRangeAges = bottomSheetDialog.findViewById(R.id.range_slider_age);
         mTvRangeAges = bottomSheetDialog.findViewById(R.id.tv_st_range_ages);
         // btn male
@@ -255,22 +258,26 @@ public class HomeFragment extends Fragment  {
         mLayoutBtnBoth = bottomSheetDialog.findViewById(R.id.btn_st_both);
         mImgBoth = bottomSheetDialog.findViewById(R.id.img_st_both);
         mTvBoth = bottomSheetDialog.findViewById(R.id.tv_st_both);
-        // btn Hoan thanh
-        mBtnFinish = bottomSheetDialog.findViewById(R.id.btn_st_finish);
 
+        mBtnFinish = bottomSheetDialog.findViewById(R.id.btn_st_finish);
+        String localUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         // thay doi range slide
-        if(ConnectRepo.getInstance().getUserLocal() != null){
-            genderMatch = ConnectRepo.getInstance().getUserLocal().getGenderMatch();
-            if(genderMatch != null){
+        Fimaers userLocal = ConnectRepo.getInstance().getUserLocal(); // Kiểm tra null ở đây
+        if (userLocal != null) {
+            genderMatch = userLocal.getGenderMatch();
+            if (genderMatch != null) {
                 toggleGenderButtons(genderMatch);
             }
-            float min = ConnectRepo.getInstance().getUserLocal().getMinAgeMatch();
-            float max = ConnectRepo.getInstance().getUserLocal().getMaxAgeMatch();
-            if(12 <= min && min <= 40 && 12 <= max && max <= 40) {
+            float min = userLocal.getMinAgeMatch();
+            float max = userLocal.getMaxAgeMatch();
+            if (12 <= min && min <= 40 && 12 <= max && max <= 40) {
                 String rangeAges = Math.round(min) + "-" + Math.round(max);
                 mTvRangeAges.setText(rangeAges);
                 mRangeAges.setValues(min, max);
             }
+        }
+        else {
+            Toast.makeText(getContext(), "Null userclocal", Toast.LENGTH_SHORT).show();
         }
 
         mRangeAges.addOnChangeListener((slider, value, fromUser) -> {
@@ -295,30 +302,49 @@ public class HomeFragment extends Fragment  {
         });
 
         mBtnFinish.setOnClickListener(v -> {
-            // finish and save to user
-            if(ConnectRepo.getInstance().getUserLocal() != null){
-                if(genderMatch != null){
-                    ConnectRepo.getInstance().getUserLocal().setGenderMatch(genderMatch);
-                }
-                ConnectRepo.getInstance().getUserLocal().setMinAgeMatch(Math.round(mRangeAges.getValues().get(0)));
-                ConnectRepo.getInstance().getUserLocal().setMaxAgeMatch(Math.round(mRangeAges.getValues().get(1)));
+            if (genderMatch == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn giới tính!", Toast.LENGTH_SHORT).show();
+                return;
             }
-            // update in firebase
-            fimaeUserRef.document(ConnectRepo.getInstance().getUserLocal().getUid()).set(ConnectRepo.getInstance().getUserLocal())
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(getContext(), "User has been updated..", Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getContext(), "Fail to update the data..", Toast.LENGTH_SHORT).show();
-                        }
-            });
+
+            Fimaers userLocalFinish = ConnectRepo.getInstance().getUserLocal(); // Kiểm tra null ở đây
+
+            if (userLocalFinish != null) {
+                // finish and save to user
+                userLocalFinish.setMinAgeMatch(Math.round(mRangeAges.getValues().get(0)));
+                userLocalFinish.setMaxAgeMatch(Math.round(mRangeAges.getValues().get(1)));
+
+                fimaeUserRef.document(userLocalFinish.getUid()).set(userLocalFinish)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Toast.makeText(getContext(), "User has been updated..", Toast.LENGTH_SHORT).show();
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        getUsersByFilter(genderMatch, Math.round(mRangeAges.getValues().get(0)), Math.round(mRangeAges.getValues().get(1)));
+                                        userAdapter.notifyDataSetChanged();
+                                    }
+                                }, 500); // 1000 milliseconds delay
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getContext(), "Fail to update the data..", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            } else {
+                // Handle the case where userLocalFinish is null
+                Toast.makeText(getContext(), "UserLocalFinish is null", Toast.LENGTH_SHORT).show();
+
+            }
+
             bottomSheetDialog.dismiss();
         });
     }
+
+
+
     private void toggleGenderButtons(GenderMatch genderMatch) {
         if(genderMatch == GenderMatch.male) {
             mImgMale.setColorFilter(ContextCompat.getColor(getContext(), R.color.primary_2), PorterDuff.Mode.SRC_IN);
@@ -349,10 +375,156 @@ public class HomeFragment extends Fragment  {
             mTvBoth.setTextColor(ContextCompat.getColor(getContext(), R.color.primary_2));
         }
     }
+    private void getUsersByFilter(GenderMatch genderMatch, int minAge, int maxAge) {
+        String localUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-    private void showToast(String value) {
-        Toast.makeText(this.getContext(), value, Toast.LENGTH_LONG).show();
+        // Tạo một truy vấn Firebase Firestore để lấy người dùng theo điều kiện lọc
+        Query query = fimaeUserRef.whereNotEqualTo("uid", localUid); // Loại bỏ người dùng hiện tại
+        if (genderMatch != null) {
+            query = query.whereEqualTo("gender", genderMatch.toString()); // Lọc theo giới tính
+        }
+
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    mUsers.clear(); // Xóa danh sách người dùng hiện tại
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Fimaers user = document.toObject(Fimaers.class);
+                        // Kiểm tra tuổi của người dùng
+                        int userAge = Integer.parseInt(user.getAge());
+                        if (userAge >= minAge && userAge <= maxAge) {
+                            mUsers.add(user); // Thêm người dùng phù hợp vào danh sách
+                        }
+                    }
+                    // Sắp xếp danh sách người dùng theo thời gian tạo
+                    Collections.sort(mUsers, new Comparator<Fimaers>() {
+                        @Override
+                        public int compare(Fimaers user1, Fimaers user2) {
+                            return Long.compare(user2.getTimeCreated().getDate(), user1.getTimeCreated().getDate());
+                        }
+                    });
+                    userAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView với danh sách mới
+                } else {
+                    Log.d("Loi", "Error getting documents: ", task.getException());
+                }
+            }
+        });
+    }
+    private void getUsersFollowing() {
+        String currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Xóa danh sách người dùng hiện tại trước khi thêm mới
+        mUsers.clear();
+
+        // Bước 1: Lấy danh sách UID của người dùng đang được theo dõi bởi người dùng hiện tại
+        FirebaseFirestore.getInstance()
+                .collection("follows")
+                .whereEqualTo("following", currentUserUid)
+                .get()
+                .addOnSuccessListener(followingQueryDocumentSnapshots -> {
+                    List<String> followingIds = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : followingQueryDocumentSnapshots) {
+                        String followingId = document.getString("follower"); // Lấy UID của người dùng đang theo dõi
+                        if (followingId != null) {
+                            followingIds.add(followingId);
+                        }
+                    }
+
+// Bước 2: Lấy thông tin chi tiết của người dùng đang được theo dõi
+                    for (String id : followingIds) {
+                        FirebaseFirestore.getInstance()
+                                .collection("fimaers")
+                                .document(id)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    Fimaers user = documentSnapshot.toObject(Fimaers.class);
+                                    if (user != null) {
+                                        mUsers.add(user);
+                                        userAdapter.notifyDataSetChanged(); // Cập nhật adapter mỗi lần có người dùng mới được thêm vào danh sách
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    // Xử lý lỗi
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Xử lý lỗi
+                });
     }
 
+    private void getUsersNotFollowing() {
+        String currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Lấy danh sách người dùng không nằm trong danh sách người dùng đang được theo dõi
+        mUsers.clear(); // Xóa danh sách người dùng hiện tại trước khi thêm mới
+
+        // Tạo một truy vấn Firestore để lấy tất cả người dùng
+        FirebaseFirestore.getInstance()
+                .collection("fimaers")
+                .get()
+                .addOnSuccessListener(allUsersQueryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : allUsersQueryDocumentSnapshots) {
+                        Fimaers user = document.toObject(Fimaers.class);
+                        // Lọc ra những người dùng không nằm trong danh sách người dùng đang được theo dõi và không phải là người dùng hiện tại
+                        if (!user.getUid().equals(currentUserUid)) {
+                            FirebaseFirestore.getInstance()
+                                    .collection("follows")
+                                    .whereEqualTo("following", currentUserUid)
+                                    .whereEqualTo("follower", user.getUid())
+                                    .get()
+                                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                                        if (queryDocumentSnapshots.isEmpty()) {
+                                            // Nếu danh sách người theo dõi không chứa người dùng hiện tại, thêm người dùng vào danh sách chưa được theo dõi
+                                            mUsers.add(user);
+                                            userAdapter.notifyDataSetChanged(); // Cập nhật adapter
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        // Xử lý lỗi
+                                    });
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Xử lý lỗi
+                });
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // Gọi phương thức để lấy danh sách người dùng khi fragment được tạo ra
+        getUsersFollowing(); // Mặc định hiển thị danh sách người dùng đang theo dõi
+        TabLayout tabLayout = view.findViewById(R.id.tab_home);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                // Xác định tab được chọn
+                switch (tab.getPosition()) {
+                    case 0:
+                        // Hiển thị danh sách người dùng đang theo dõi khi nhấn vào tab "Đang theo dõi"
+                        getUsersFollowing();
+                        break;
+                    case 1:
+                        // Hiển thị danh sách người dùng chưa được theo dõi khi nhấn vào tab "Đề xuất"
+                        getUsersNotFollowing();
+                        break;
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                // Không cần xử lý khi tab không được chọn
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+                // Không cần xử lý khi tab được chọn lại
+                onTabSelected(tab);
+            }
+        });
+    }
 
 }

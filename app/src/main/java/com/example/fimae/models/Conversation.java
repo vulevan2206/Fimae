@@ -22,10 +22,22 @@ public class Conversation {
     ArrayList<String> participantIds = new ArrayList<> ();
     HashMap<String, Date> readLastMessageAt = new HashMap<>();
     HashMap<String, Date> joinedAt = new HashMap<>();
+
     public Conversation(){
 
     }
+    private Date timestamp;
 
+    // Các getter và setter hiện tại
+
+    // Thêm getter và setter cho timestamp
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
     public static Conversation create(String id, String type, ArrayList<String> participantIds){
         Conversation conversation = new Conversation();
         conversation.setId(id);

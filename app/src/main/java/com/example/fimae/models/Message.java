@@ -25,6 +25,7 @@ public class Message {
     private ArrayList<String> deleteFromUsers;
     private boolean isHideForAllUsers;
     private Object content;
+
     public Message(){}
 
     public static Message text(String id, String conversationID, String content){

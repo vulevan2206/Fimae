@@ -41,6 +41,11 @@ public class ChatFragment extends Fragment {
         adapter = new ConversationAdapter(query, new ConversationAdapter.IClickConversationListener() {
             @Override
             public void onClickConversation(Conversation conversation, Fimaers fimaers) {
+                int position = adapter.getSelectedConversationPosition(conversation);
+                if (position != -1) {
+                    adapter.moveToTop(position);
+                    recyclerView.scrollToPosition(0);
+                }
                 Intent intent = new Intent(getContext(), OnChatActivity.class);
                 intent.putExtra("conversationID", conversation.getId());
                 intent.putExtra("fimaer", fimaers);
