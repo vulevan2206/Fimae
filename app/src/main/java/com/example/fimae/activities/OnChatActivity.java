@@ -354,10 +354,11 @@ public class OnChatActivity extends AppCompatActivity {
         intent.putExtra("isIncomingCall", false);
         startActivity(intent);
     }
+
     private void initCallVideo() {
         Intent intent = new Intent(this, CallVideoActivity.class);
         intent.putExtra("to", remoteUserToken);
-        intent.putExtra("isIncomingCallVideo", false);
+        intent.putExtra("isIncomingCallVideo", false); // Đảm bảo cài đặt đúng cho cuộc gọi ra
         startActivity(intent);
     }
     private void getRemoteUserId() {

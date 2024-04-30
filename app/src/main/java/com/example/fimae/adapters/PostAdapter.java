@@ -102,18 +102,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         PostRepository.getInstance().getUserById(currentPost.getPublisher(), new CallBack<Fimaers>() {
             @Override
             public void onSuccess(Fimaers fimaers) {
-
-                Picasso.get().load(fimaers.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
-                if(!fimaers.isGender()){
-                    binding.itemUserIcGender.setImageResource(R.drawable.ic_male);
-                    binding.genderAgeIcon.setBackgroundResource(R.drawable.shape_gender_border_pink);
+                if (fimaers != null) { // Check if fimaers is not null
+                    // Access fimaers properties safely
+                    Picasso.get().load(fimaers.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
+                    if (!fimaers.isGender()) {
+                        binding.itemUserIcGender.setImageResource(R.drawable.ic_male);
+                        binding.genderAgeIcon.setBackgroundResource(R.drawable.shape_gender_border_pink);
+                    }
+                    binding.ageTextView.setText(String.valueOf(fimaers.calculateAge()));
+                    String fullname = fimaers.getFirstName() + " " + fimaers.getLastName();
+                    binding.userName.setText(fullname);
+                    initListener(binding, currentPost, fimaers);
+                } else {
+                    // Handle the case where fimaers is null, possibly show an error message or log a warning
+                    Log.e("PostAdapter", "fimaers object is null");
                 }
-                binding.ageTextView.setText(String.valueOf(fimaers.calculateAge()));
-                String fullname = fimaers.getFirstName() +" "+ fimaers.getLastName();
-                binding.userName.setText(fullname);
-                initListener(binding, currentPost, fimaers);
             }
         });
+
         ArrayList<String> imageUrls = new ArrayList<>( currentPost.getPostImages());
         List<Uri> imageUris = new ArrayList<>();
         String description = currentPost.getContent();
@@ -177,13 +183,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
 
             binding.follow.setOnClickListener(new View.OnClickListener() {
-                  @Override
-                  public void onClick(View view) {
-                      followRepository.follow(currentPost.getPublisher());
-                      binding.follow.setVisibility(View.GONE);
-                      binding.chat.setVisibility(View.VISIBLE);
-                  }
-              }
+                                                  @Override
+                                                  public void onClick(View view) {
+                                                      followRepository.follow(currentPost.getPublisher());
+                                                      binding.follow.setVisibility(View.GONE);
+                                                      binding.chat.setVisibility(View.VISIBLE);
+                                                  }
+                                              }
             );
             if(!currentPost.getContent().equals(updatePost.getContent())){
                 binding.content.setText(updatePost.getContent());

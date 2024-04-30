@@ -106,12 +106,17 @@ public class CallService {
                 activity.runOnUiThread(()->{
                     call2Map.put(stringeeCall2.getCallId(), stringeeCall2);
                     // set user remote
-                    ConnectRepo.getInstance().setUserRemoteById(stringeeCall2.getFrom());
-                    // navigate to call video screen
-                    String type = stringeeCall2.getCustomDataFromYourServer();
-                    for (CallClientListener listener : listeners) {
-                        listener.onIncomingCallVideo(type, stringeeCall2.getCallId());
-                    }
+                    FimaerRepository.getInstance().getFimaerById(stringeeCall2.getFrom()).addOnCompleteListener(task -> {
+                        if(task.isSuccessful())
+                        {
+                            ConnectRepo.getInstance().setUserRemote(task.getResult());
+                            // navigate to call screen
+                            String type = stringeeCall2.getCustomDataFromYourServer();
+                            for (CallClientListener listener : listeners) {
+                                listener.onIncomingCallVideo(type, stringeeCall2.getCallId());
+                            }
+                        }
+                    });
                 });
             }
 
