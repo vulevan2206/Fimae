@@ -13,7 +13,7 @@ import com.example.fimae.repository.AuthRepository;
 
 public class SettingActivity extends AppCompatActivity {
 
-    RelativeLayout editProfile, relativeSignOut, relativePrivacy, relativeCommunity;
+    RelativeLayout editProfile, relativeSignOut, relativePrivacy, relativeCommunity, relativeChangePassword;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +59,13 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
 
+        relativeChangePassword = findViewById((R.id.relativeChangePassword));
+        relativeChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                navToChangePassword();
+            }
+        });
 
     }
     private void logOut()
@@ -69,6 +76,10 @@ public class SettingActivity extends AppCompatActivity {
     }
     private void navToEditProfile() {
         Intent intent = new Intent(this, EditProfileActivity.class);
+        startActivity(intent);
+    }
+    private void navToChangePassword() {
+        Intent intent = new Intent(this, ChangePasswordActivity.class);
         startActivity(intent);
     }
 }

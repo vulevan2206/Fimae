@@ -7,7 +7,6 @@ import com.google.firebase.firestore.ServerTimestamp;
 import java.util.Date;
 
 public class Participant{
-    public static final String ROLE_ADMIN = "admin";
     public static final String ROLE_Participant = "participant";
     private String uid;
     private String role;
