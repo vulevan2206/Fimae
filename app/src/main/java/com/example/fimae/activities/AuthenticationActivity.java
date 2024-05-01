@@ -48,7 +48,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     TextInputLayout repeatPassLayout, passLayout;
 
     Button btnSignIn;
-    ImageButton btnGoogleSignIn;
+
     TextView signUpTextView, forgotPasswordTextView;
     FirebaseAuth auth = FirebaseAuth.getInstance();
     AuthRepository authRepository = AuthRepository.getInstance();
@@ -74,7 +74,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         signUpTextView = findViewById(R.id.textViewRegister);
         btnSignIn = findViewById(R.id.buttonLogin);
         forgotPasswordTextView = findViewById(R.id.textViewForgotPassword);
-        btnGoogleSignIn = findViewById(R.id.googleImgBtn);
         progressBar = findViewById(R.id.progressBar);
         contentLayout = findViewById(R.id.content_layout);
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -84,12 +83,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        btnGoogleSignIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signInWithGoogle();
-            }
-        });
+
 
         signUpTextView.setOnClickListener(new View.OnClickListener() {
             @Override

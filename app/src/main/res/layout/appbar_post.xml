@@ -9,12 +9,7 @@
     android:paddingBottom="8dp"
     android:layout_height="wrap_content">
 
-    <ImageButton
-        android:id="@+id/btn_setting_home"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:background="@color/white"
-        android:padding="20dp"/>
+
 
     <Space
         android:layout_width="0dp"

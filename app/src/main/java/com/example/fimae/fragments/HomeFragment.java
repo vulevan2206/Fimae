@@ -131,13 +131,7 @@ public class HomeFragment extends Fragment {
                 toast.show();
             }
         });
-        mBtnSetting = mView.findViewById(R.id.btn_setting_home);
-        mBtnSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                settingUser();
-            }
-        });
+
 
         // recycleView: List users
         mRcvUsers = mView.findViewById(R.id.recycler_users);

@@ -106,8 +106,6 @@ public class StoryAdapter extends FirestoreAdapter<StoryAdapter.StoryViewHolder>
                 public void onComplete(@NonNull Task<Fimaers> task) {
                     if(task.isSuccessful()){
                         Fimaers fimaers = task.getResult();
-                        holder.storyTitle.setText(fimaers.getName());
-                        holder.storyTitle.setText(fimaers.getName()); // Set the story title
                         Glide.with(holder.storyAvatar)
                                 .load(fimaers.getAvatarUrl())
                                 .into(holder.storyAvatar);
