@@ -196,14 +196,11 @@ public class UserHomeViewAdapter extends RecyclerView.Adapter<UserHomeViewAdapte
             protected FilterResults performFiltering(CharSequence constraint) {
                 String search = constraint.toString();
                 if (search.isEmpty()) {
-                    mUsers.clear();
+                    mUsers = mUsersOld;
                 } else {
-                    ArrayList<Fimaers> list = new ArrayList<>();
+                    List<Fimaers> list = new ArrayList<>();
                     for (Fimaers fimaer : mUsersOld) {
-                        String fullNameWithNoAccent = StringUtils.removeAccent(fimaer.getFirstName() + " " + fimaer.getLastName());
-                        String searchWithNoAccent = StringUtils.removeAccent(search);
-                        String bioWithNoAccent = StringUtils.removeAccent(fimaer.getBio());
-                        if (fullNameWithNoAccent.toLowerCase().contains(searchWithNoAccent.toLowerCase()) || bioWithNoAccent.toLowerCase().contains(searchWithNoAccent.toLowerCase())||fimaer.getUid().equals(search)) {
+                        if(fimaer.getName().toLowerCase().contains(search.toLowerCase())){
                             list.add(fimaer);
                         }
                     }
@@ -216,9 +213,8 @@ public class UserHomeViewAdapter extends RecyclerView.Adapter<UserHomeViewAdapte
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-
-                if(results != null){
-                    mUsers = (ArrayList<Fimaers>) results.values;
+                if (results != null) {
+                    mUsers = (List<Fimaers>) results.values;
                     notifyDataSetChanged();
                 }
             }

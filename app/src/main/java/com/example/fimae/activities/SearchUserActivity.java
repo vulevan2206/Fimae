@@ -53,7 +53,7 @@ public class SearchUserActivity extends AppCompatActivity implements SearchView.
     @Override
     public boolean onQueryTextSubmit(String query) {
         adapter.getFilter().filter(query);
-        return true;
+        return false;
     }
 
     @Override
