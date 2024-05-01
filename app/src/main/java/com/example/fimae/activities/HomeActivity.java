@@ -85,7 +85,12 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public void onIncomingCallVideo(String typeCall, String callId) {
-
+                if(typeCall.equals(CallService.NORMAL)) {
+                    Intent intent = new Intent(HomeActivity.this, CallVideoActivity.class);
+                    intent.putExtra("callId", callId);
+                    intent.putExtra("isIncomingCall", true);
+                    startActivity(intent);
+                }
             }
         });
     }

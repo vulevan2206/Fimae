@@ -7,29 +7,6 @@
     android:background="@drawable/background_gradient"
     tools:context=".activities.CallActivity">
 
-    <ImageButton
-        android:id="@+id/btn_close"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:background="@drawable/ic_close"
-        android:backgroundTint="@color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="15dp"
-        android:layout_marginStart="20dp"/>
-
-    <TextView
-        android:id="@+id/tv_name_remote"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        style="@style/bold_20"
-        android:textColor="@color/text_white"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="15dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <LinearLayout
         android:id="@+id/linear_avatar"
         android:layout_width="match_parent"
@@ -57,6 +34,20 @@
             android:src="@drawable/ic_default_avatar" />
     </LinearLayout>
 
+
+
+
+    <TextView
+        android:id="@+id/tv_name_remote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        style="@style/bold_20"
+        android:textColor="@color/text_white"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
     <TextView
         android:id="@+id/tv_status"
         android:layout_width="wrap_content"
@@ -94,15 +85,18 @@
                 android:layout_margin="10dp"
                 android:background="@drawable/background_btn_speaker_off"
                 android:padding="20dp" />
-
-
+            <Space
+                android:layout_width="40dp"
+                android:layout_height="0dp"/>
             <ImageButton
                 android:id="@+id/btn_end"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:background="@drawable/background_btn_call"
                 android:padding="0dp" />
-
+            <Space
+                android:layout_width="40dp"
+                android:layout_height="0dp"/>
             <ImageButton
                 android:id="@+id/btn_mute"
                 android:layout_width="wrap_content"
@@ -112,10 +106,14 @@
                 android:padding="20dp" />
 
         </LinearLayout>
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="20dp"/>
+
 
         <LinearLayout
             android:id="@+id/v_incoming"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal"
@@ -128,7 +126,6 @@
                 android:layout_margin="10dp"
                 android:background="@drawable/background_btn_call"
                 android:padding="20dp" />
-
 
 
             <ImageButton

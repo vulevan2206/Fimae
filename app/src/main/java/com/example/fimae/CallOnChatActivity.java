@@ -1,18 +1,22 @@
 package com.example.fimae;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.example.fimae.R;
+import com.example.fimae.activities.CallVideoActivity;
 import com.example.fimae.databinding.ActivityCallOnChatBinding;
+import com.example.fimae.databinding.ActivityCallVideoBinding;
 import com.example.fimae.repository.ConnectRepo;
 import com.example.fimae.service.CallService;
 import com.squareup.picasso.Picasso;
@@ -29,10 +33,11 @@ import java.util.List;
 public class CallOnChatActivity extends AppCompatActivity {
     ActivityCallOnChatBinding binding;
 
+    private MediaPlayer ringtonePlayer;
 
     private StringeeCall call;
 
-    private boolean isInComingCall = false;
+    private boolean isInComingCallVideo = false;
     private String to;
     private String callId;
 
@@ -45,6 +50,7 @@ public class CallOnChatActivity extends AppCompatActivity {
     // check trang thai speaker and mic
     private boolean isSpeaker = false;
     private boolean isMicOn = true;
+    private boolean isVideoOn = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +65,6 @@ public class CallOnChatActivity extends AppCompatActivity {
         if(ConnectRepo.getInstance().getUserRemote() != null){
             Picasso.get().load(ConnectRepo.getInstance().getUserRemote().getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imgAvatarRemote);
         }
-
-        // set name user
         if(ConnectRepo.getInstance().getUserLocal() != null){
             binding.tvNameRemote.setText(ConnectRepo.getInstance().getUserRemote().getName());
         }
@@ -98,7 +102,7 @@ public class CallOnChatActivity extends AppCompatActivity {
                         call.answer(new StatusListener() {
                             @Override
                             public void onSuccess() {
-
+                                releaseMediaPlayer();
                             }
                         });
                         binding.vIncoming.setVisibility(View.GONE);
@@ -116,7 +120,7 @@ public class CallOnChatActivity extends AppCompatActivity {
                         call.reject(new StatusListener() {
                             @Override
                             public void onSuccess() {
-
+                                releaseMediaPlayer();
                             }
                         });
                         onFinish();
@@ -128,30 +132,35 @@ public class CallOnChatActivity extends AppCompatActivity {
         binding.btnEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onEndCall();
+                releaseMediaPlayer();onEndCall();
             }
         });
 
+
         if(getIntent() != null){
-            isInComingCall = getIntent().getBooleanExtra("isIncomingCall", false);
+            isInComingCallVideo = getIntent().getBooleanExtra("isIncomingCall", false);
             to = getIntent().getStringExtra("to");
             // duoc goi
             callId = getIntent().getStringExtra("callId");
         }
 
         // kiem tra dang goi den
-        binding.vIncoming.setVisibility(isInComingCall? View.VISIBLE : View.GONE);
-        binding.vOption.setVisibility(isInComingCall? View.GONE: View.VISIBLE);
-        binding.btnEnd.setVisibility(isInComingCall? View.GONE: View.VISIBLE);
+        binding.vIncoming.setVisibility(isInComingCallVideo? View.VISIBLE : View.GONE);
+        binding.vOption.setVisibility(isInComingCallVideo? View.GONE: View.VISIBLE);
+        binding.btnEnd.setVisibility(isInComingCallVideo? View.GONE: View.VISIBLE);
 
         // list permission
         List<String> listPermission = new ArrayList<>();
-        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             // add permisson
-            listPermission.add(android.Manifest.permission.RECORD_AUDIO);
+            listPermission.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // add permisson
+            listPermission.add(Manifest.permission.CAMERA);
         }
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-            if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 // add permisson
                 listPermission.add(Manifest.permission.BLUETOOTH_CONNECT);
             }
@@ -164,17 +173,10 @@ public class CallOnChatActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, permissions, 0);
             return;
         }
-        // close
-        binding.btnClose.setOnClickListener(v -> {
-            // cup may
-            onEndCall();
-        });
-
         initCall();
     }
 
     private void onFinish() {
-        audioManager.stop();
         //WaitingActivity.isCalled = false;
         finish();
     }
@@ -219,7 +221,7 @@ public class CallOnChatActivity extends AppCompatActivity {
     }
 
     private void initCall(){
-        if(isInComingCall){
+        if(isInComingCallVideo){
             // cuoc goi den
             call = CallService.getInstance().callMap.get(callId);
             if( call == null){
@@ -229,6 +231,7 @@ public class CallOnChatActivity extends AppCompatActivity {
         }else{
             // tao cuoc goi moi
             call = new StringeeCall(CallService.getInstance().client, CallService.getInstance().client.getUserId(), to);
+            call.setVideoCall(true);
             call.setCustom(CallService.NORMAL);
         }
 
@@ -249,6 +252,7 @@ public class CallOnChatActivity extends AppCompatActivity {
                             break;
                         case ANSWERED:
                             binding.tvStatus.setText("Đang trả lời");
+                            releaseMediaPlayer();
                             // cuoc goi bat dau
                             if(mMediaState == StringeeCall.MediaState.CONNECTED){
                                 binding.tvStatus.setText("");
@@ -256,10 +260,12 @@ public class CallOnChatActivity extends AppCompatActivity {
                             break;
                         case BUSY:
                             binding.tvStatus.setText("Máy bận");
+                            releaseMediaPlayer();
                             onFinish();
                             break;
                         case ENDED:
                             binding.tvStatus.setText("Kết thúc");
+                            releaseMediaPlayer();
                             onFinish();
                             break;
 
@@ -299,12 +305,18 @@ public class CallOnChatActivity extends AppCompatActivity {
 
             @Override
             public void onLocalStream(StringeeCall stringeeCall) {
+                runOnUiThread(() -> {
 
+                    stringeeCall.renderLocalView(true);
+                });
             }
 
             @Override
             public void onRemoteStream(StringeeCall stringeeCall) {
+                runOnUiThread(() -> {
 
+                    stringeeCall.renderRemoteView(false);
+                });
             }
 
             @Override
@@ -332,13 +344,14 @@ public class CallOnChatActivity extends AppCompatActivity {
             // start audio
         });
 
-        audioManager.setSpeakerphoneOn(false);
+        audioManager.setSpeakerphoneOn(true);
         // khoi tao cuoc goi
-        if(isInComingCall){
+        if(isInComingCallVideo){
             // do chuong goi
             call.ringing(new StatusListener() {
                 @Override
                 public void onSuccess() {
+                    playSound();
 
                 }
             });
@@ -346,12 +359,28 @@ public class CallOnChatActivity extends AppCompatActivity {
             call.makeCall(new StatusListener() {
                 @Override
                 public void onSuccess() {
+                    releaseMediaPlayer();
 
                 }
             });
         }
     }
+    private void playSound() {
+        // Check if the MediaPlayer is null or not playing
+        if (ringtonePlayer == null || !ringtonePlayer.isPlaying()) {
+            // Create and start the MediaPlayer
+            ringtonePlayer = MediaPlayer.create(CallOnChatActivity.this, R.raw.ring); // Replace R.raw.ring with your sound file
+            ringtonePlayer.setLooping(true); // Set looping to true if you want the sound to repeat
+            ringtonePlayer.start();
+        }
+    }
 
+    private void releaseMediaPlayer() {
+        if (ringtonePlayer != null) {
+            ringtonePlayer.release();
+            ringtonePlayer = null;
+        }
+    }
     private void showToast(String value) {
         Toast.makeText(this, value, Toast.LENGTH_LONG).show();
     }
