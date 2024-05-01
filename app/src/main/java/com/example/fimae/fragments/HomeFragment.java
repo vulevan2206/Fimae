@@ -123,14 +123,7 @@ public class HomeFragment extends Fragment {
         mView = inflater.inflate(R.layout.fragment_home, container, false);
         createBottomSheetItem();
 
-        mBtnNoti = mView.findViewById(R.id.btn_noti_home);
-        mBtnNoti.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast toast = Toast.makeText(v.getContext(), "Noti", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
+
 
 
         // recycleView: List users

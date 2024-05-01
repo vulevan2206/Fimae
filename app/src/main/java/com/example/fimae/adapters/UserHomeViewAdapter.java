@@ -64,6 +64,7 @@ public class UserHomeViewAdapter extends RecyclerView.Adapter<UserHomeViewAdapte
         private CircleImageView mAvatarView;
         private TextView mTextName;
         private TextView mTextDes;
+
         private TextView mTextAge;
         private LinearLayout mLayoutGenderAge;
         private ImageView mIconGender;
@@ -110,14 +111,22 @@ public class UserHomeViewAdapter extends RecyclerView.Adapter<UserHomeViewAdapte
         lastName = lastName != null ? lastName : "";
         // Set the text in the TextView
         holder.mTextName.setText(firstName + " " + lastName);
-        holder.mTextDes.setText(user.getBio());
+
+        // Handle description text
+        String description = user.getBio();
+        if (description != null && description.length() > 40) {
+            description = description.substring(0, 40) + "...";
+        }
+        holder.mTextDes.setText(description);
+
+
         holder.mTextAge.setText(String.valueOf(user.calculateAge()));
         holder.mLayoutGenderAge.setBackgroundResource(user.isGender() ? R.drawable.shape_gender_border_blue : R.drawable.shape_gender_border_pink);
         holder.mIconGender.setImageResource(user.isGender() ? R.drawable.ic_male : R.drawable.ic_female);
         if(user.isOnline()){
             holder.onlineStatus.setVisibility(View.VISIBLE);
             holder.offlineStatus.setVisibility(View.GONE);
-        }else if(user.getLastActiveMinuteAgo() <= 60){
+        } else if(user.getLastActiveMinuteAgo() <= 60){
             holder.onlineStatus.setVisibility(View.GONE);
             holder.offlineStatus.setVisibility(View.VISIBLE);
             holder.offlineStatus.setText(user.getLastActiveMinuteAgo() + "m");
@@ -126,59 +135,6 @@ public class UserHomeViewAdapter extends RecyclerView.Adapter<UserHomeViewAdapte
             holder.offlineStatus.setVisibility(View.GONE);
         }
         holder.mLayoutCard.setOnClickListener(v -> iClickCardUserListener.onClickUser(user));
-        //create bottomsheet
-
-
-//        if(user.getUid().equals(FirebaseAuth.getInstance().getUid())){
-//            holder.follow.setVisibility(View.GONE);
-//        }
-//        else{
-//            String doc1 = FirebaseAuth.getInstance().getUid()+"_"+user.getUid();
-//            String doc2 = user.getUid()+"_"+FirebaseAuth.getInstance().getUid();
-//            Query query = FollowRepository.getInstance().followRef.whereIn(FieldPath.documentId(), Arrays.asList(doc1, doc2));
-//
-//            query.addSnapshotListener((queryDocumentSnapshots, error) -> {
-//                if (error != null) {
-//                    // Handle the error
-//                    return;
-//                }
-//                if(queryDocumentSnapshots.getDocuments().size() == 2){
-//                    holder.goChat.setVisibility(View.VISIBLE);
-//                    holder.follow.setVisibility(View.GONE);
-//                }
-//                else {
-//                    holder.goChat.setVisibility(View.GONE);
-//                    holder.follow.setVisibility(View.VISIBLE);
-//                    if(queryDocumentSnapshots.getDocuments().size() == 1){
-//                        Follows follows = queryDocumentSnapshots.getDocuments().get(0).toObject(Follows.class);
-//                        assert follows != null;
-//                        if(follows.getFollower().equals(user.getUid())){
-//                            holder.follow.setText("Bỏ theo dõi");
-//                        }
-//                        else{
-//                            holder.follow.setText("Theo dõi");
-//                        }
-//                    }
-//                    else{
-//                        holder.follow.setText("Theo dõi");
-//                    }
-//                }
-//            });
-//        }
-//
-//        holder.goChat.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//            }
-//        });
-//        holder.follow.setOnClickListener(view -> {
-//            if(holder.follow.getText().equals("Theo dõi")){
-//                FollowRepository.getInstance().follow(user.getUid());
-//            }
-//            else {
-//                FollowRepository.getInstance().unFollow(user.getUid());
-//            }
-//        });
     }
 
     @Override

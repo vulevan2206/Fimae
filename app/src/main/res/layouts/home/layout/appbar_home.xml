@@ -10,6 +10,14 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
     android:layout_height="wrap_content">
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <TextView
         style="@style/bold_24"
@@ -28,18 +36,15 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_weight="1" />
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-    <ImageButton
-        android:id="@+id/btn_noti_home"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:backgroundTint="@color/white"
-        android:background="@drawable/ic_notification"
-        android:padding="20dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle_me"
-        android:layout_width="wrap_content"
+        android:layout_width="260dp"
         android:layout_height="68dp"
         tools:listitem="@layout/item_user" />
 

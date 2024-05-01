@@ -38,22 +38,33 @@ public class ShareAdapter extends RecyclerView.Adapter<ShareAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ShareAdapter.ViewHolder holder, int position) {
         ShareItemUserBinding binding = holder.binding;
         Fimaers userInfo = userInfos.get(position);
-        String fullName = userInfo.getFirstName() + " " + userInfo.getLastName(); // Tạo chuỗi tên đầy đủ từ firstName và lastName
-        binding.userName.setText(fullName);
-        Picasso.get().load(userInfo.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
-        binding.slogan.setText(userInfo.getBio());
-        if (!userInfo.isGender()) {
-            binding.itemUserIcGender.setImageResource(R.drawable.ic_male);
-            binding.genderAgeIcon.setBackgroundResource(R.drawable.shape_gender_border_pink);
-        }
-        binding.ageTextView.setText(String.valueOf(userInfo.calculateAge()));
-        binding.share.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callback.onClick(userInfo);
+        if (userInfo != null) {
+            String fullName = userInfo.getFirstName() + " " + userInfo.getLastName(); // Tạo chuỗi tên đầy đủ từ firstName và lastName
+            binding.userName.setText(fullName);
+            if (userInfo.getAvatarUrl() != null) {
+                Picasso.get().load(userInfo.getAvatarUrl()).placeholder(R.drawable.ic_default_avatar).into(binding.imageAvatar);
+            } else {
+                binding.imageAvatar.setImageResource(R.drawable.ic_default_avatar); // Load default avatar if avatarUrl is null
             }
-        });
+            if (userInfo.getBio() != null) {
+                binding.slogan.setText(userInfo.getBio());
+            } else {
+                binding.slogan.setText(""); // Set empty text if bio is null
+            }
+            if (!userInfo.isGender()) {
+                binding.itemUserIcGender.setImageResource(R.drawable.ic_male);
+                binding.genderAgeIcon.setBackgroundResource(R.drawable.shape_gender_border_pink);
+            }
+            binding.ageTextView.setText(String.valueOf(userInfo.calculateAge()));
+            binding.share.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    callback.onClick(userInfo);
+                }
+            });
+        }
     }
+
 
     @Override
     public int getItemCount() {
