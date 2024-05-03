@@ -1,4 +1,4 @@
-package com.example.fimae;
+package com.example.fimae.activities;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -14,9 +14,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.fimae.R;
-import com.example.fimae.activities.CallVideoActivity;
 import com.example.fimae.databinding.ActivityCallOnChatBinding;
-import com.example.fimae.databinding.ActivityCallVideoBinding;
 import com.example.fimae.repository.ConnectRepo;
 import com.example.fimae.service.CallService;
 import com.squareup.picasso.Picasso;

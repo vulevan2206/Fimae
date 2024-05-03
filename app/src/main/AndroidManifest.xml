@@ -48,7 +48,7 @@
             android:name=".activities.DisabledUserActivity"
             android:exported="false" />
         <activity
-            android:name=".CallOnChatActivity"
+            android:name=".activities.CallOnChatActivity"
             android:exported="false" />
         <activity
             android:name=".activities.CallVideoActivity"

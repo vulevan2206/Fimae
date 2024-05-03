@@ -9,7 +9,6 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import com.example.fimae.CallOnChatActivity;
 import com.example.fimae.R;
 import com.example.fimae.adapters.ViewPagerAdapter;
 import com.example.fimae.service.CallService;
