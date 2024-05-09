@@ -1,3 +1,4 @@
+
 package com.example.fimae.activities;
 
 import android.Manifest;
@@ -91,7 +92,6 @@ public class CallOnChatActivity extends AppCompatActivity {
                 });
             }
         });
-
         binding.btnAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -194,8 +194,7 @@ public class CallOnChatActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        // lay quyen audio
+// lay quyen audio
         boolean isGranted = false;
         if(grantResults.length > 0){
             for(int grantResult : grantResults){
@@ -300,7 +299,6 @@ public class CallOnChatActivity extends AppCompatActivity {
                     }
                 });
             }
-
             @Override
             public void onLocalStream(StringeeCall stringeeCall) {
                 runOnUiThread(() -> {

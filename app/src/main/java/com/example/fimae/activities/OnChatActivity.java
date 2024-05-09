@@ -4,27 +4,29 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
-
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fimae.R;
 import com.example.fimae.adapters.BottomSheetItemAdapter;
 import com.example.fimae.adapters.MessageAdapter;
-import com.example.fimae.fragments.MediaListDialogFragment;
-import com.example.fimae.R;
 import com.example.fimae.fragments.FimaeBottomSheet;
+import com.example.fimae.fragments.MediaListDialogFragment;
 import com.example.fimae.models.BottomSheetItem;
 import com.example.fimae.models.Conversation;
 import com.example.fimae.models.Fimaers;
@@ -37,11 +39,18 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.*;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.stringee.StringeeClient;
 import com.stringee.call.StringeeCall;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class OnChatActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -98,7 +107,7 @@ public class OnChatActivity extends AppCompatActivity {
                         status = "Hoạt động " + lastActiveMinutes + " phút trước";
                     }
                     else if(lastActiveMinutes >1440){
-                        status = "Hoạt động " + lastActiveMinutes + " ngày trước";
+                        status = "Hoạt động " + lastActiveMinutes/1440 + " ngày trước";
                     }
                     else {
                         // Chuyển đổi phút thành giờ và phút
