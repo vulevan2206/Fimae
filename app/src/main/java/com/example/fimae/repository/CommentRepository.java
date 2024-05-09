@@ -45,7 +45,7 @@ public class CommentRepository {
                 .addOnSuccessListener(aVoid -> {
                     // Increment the numberOfComments field in the corresponding Post document
                     DocumentReference postRef = FirebaseFirestore.getInstance().collection("posts").document(postId);
-                    postRef.update("numberOfComments", FieldValue.increment(1))
+                    postRef.update("numberOfComments", FieldValue.increment(0))
                             .addOnSuccessListener(aVoid1 -> {
                                 taskCompletionSource.setResult(true);
                             })
@@ -80,7 +80,7 @@ public class CommentRepository {
                 // Xóa thành công
                 // Giảm số lượng bình luận của bài đăng đi 1
                 DocumentReference postRef = FirebaseFirestore.getInstance().collection("posts").document(postId);
-                postRef.update("numberOfComments", FieldValue.increment(-1))
+                postRef.update("numberOfComments", FieldValue.increment(0))
                         .addOnSuccessListener(aVoid -> {
                             taskCompletionSource.setResult(true);
                         })

@@ -17,8 +17,9 @@ import android.widget.Toast;
 import com.example.fimae.R;
 import com.example.fimae.activities.CreateProfileActivity;
 import com.example.fimae.activities.HomeActivity;
-import com.example.fimae.databinding.FragmentCreateMatchProfileBinding;
+
 import com.example.fimae.models.GenderMatch;
+import com.example.fimae.databinding.FragmentCreateMatchProfileBinding;
 import com.example.fimae.viewmodels.CreateProfileViewModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;

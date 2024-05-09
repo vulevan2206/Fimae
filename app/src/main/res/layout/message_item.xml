@@ -9,6 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Message Text"
+        android:textIsSelectable="true"
         />
 
     <!-- Thêm các phần tử khác tại đây nếu cần -->

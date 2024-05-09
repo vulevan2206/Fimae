@@ -214,4 +214,8 @@ public class ChatRepository {
         });
         return taskCompletionSource.getTask();
     }
+    public Task<Void> deleteMessage(String conversationId, String messageId) {
+        DocumentReference messageRef = firestore.collection("conversations").document(conversationId).collection("messages").document(messageId);
+        return messageRef.delete();
+    }
 }

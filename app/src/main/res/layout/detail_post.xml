@@ -155,8 +155,8 @@
                                 android:paddingVertical="2dp"/>
                             <ImageView
                                 android:id="@+id/ic_more"
-                                android:layout_width="10dp"
-                                android:layout_height="10dp"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
                                 android:src="@drawable/ic_more"
                                 />
                         </LinearLayout>
@@ -256,14 +256,15 @@
                             android:textColor="@color/text_primary"
                             android:paddingRight="0dp"
                             android:text="Bình luận:" />
+
                         <TextView
                             android:id="@+id/numberOfComment"
+                            style="@style/bold_14"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="10dp"
-                            style="@style/bold_14"
-                            android:textColor="@color/text_primary"
-                            android:text="10" />
+                            android:text="10"
+                            android:textColor="@color/text_primary" />
                         <TextView
                             android:id="@+id/like_title"
                             android:layout_width="wrap_content"

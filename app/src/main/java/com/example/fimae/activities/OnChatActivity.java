@@ -5,13 +5,16 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -98,7 +101,7 @@ public class OnChatActivity extends AppCompatActivity {
                         status = "Hoạt động " + lastActiveMinutes + " phút trước";
                     }
                     else if(lastActiveMinutes >1440){
-                        status = "Hoạt động " + lastActiveMinutes + " ngày trước";
+                        status = "Hoạt động " + lastActiveMinutes /1440 + " ngày trước";
                     }
                     else {
                         // Chuyển đổi phút thành giờ và phút
@@ -115,6 +118,37 @@ public class OnChatActivity extends AppCompatActivity {
         }
         //initStringeeConnection();
         getRemoteUserId();
+        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            GestureDetector gestureDetector = new GestureDetector(OnChatActivity.this, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                    if (child != null) {
+                        int position = recyclerView.getChildAdapterPosition(child);
+                        showDeleteMenu(position);
+                    }
+                }
+            });
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                View child = rv.findChildViewUnder(e.getX(), e.getY());
+                return child != null && gestureDetector.onTouchEvent(e);
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            }
+        });
     }
 
     private void initViews() {
@@ -140,6 +174,44 @@ public class OnChatActivity extends AppCompatActivity {
         ImageView btnGallery = findViewById(R.id.btn_galllery);
         ImageView btnMicro = findViewById(R.id.btn_micro);
     }
+    private void showDeleteMenu(int position) {
+        // Hiển thị menu xóa tin nhắn tại vị trí được chọn
+        Message message = messageAdapter.getMessage(position);
+        if (message != null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(OnChatActivity.this);
+            builder.setMessage("Bạn có muốn xóa tin nhắn này hay không")
+                    .setPositiveButton("Delete", (dialog, which) -> deleteMessage(message))
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
+    private void deleteMessage(Message message) {
+        if (message.getIdSender().equals(FirebaseAuth.getInstance().getUid())) {
+            String messageId = message.getId();
+            FirebaseFirestore.getInstance().collection("conversations")
+                    .document(conversationId)
+                    .collection("messages")
+                    .document(messageId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(OnChatActivity.this, "Tin nhắn đã được xóa", Toast.LENGTH_SHORT).show();
+                        // Kết thúc activity hiện tại
+                        // Khởi động lại activity
+                        finish();
+                        startActivity(getIntent());
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(OnChatActivity.this, "Lỗi xóa tin nhắn", Toast.LENGTH_SHORT).show());
+        } else {
+            Toast.makeText(OnChatActivity.this, "Bạn không có quyền xóa tin nhắn người khác", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void addMessages(int position) {
+        if (position != -1) {
+            messageAdapter.addMessage(position, "Đã thu hồi");
+        }
+    }
 
     private void initBottomSheetItems() {
         bottomSheetItemList = new ArrayList<BottomSheetItem>() {
@@ -157,11 +229,14 @@ public class OnChatActivity extends AppCompatActivity {
         ImageView btnAddMedia = findViewById(R.id.btn_add_media);
         btnAddMedia.setOnClickListener(v -> {
             inputMediaLayout.setVisibility(inputMediaLayout.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
+
         });
 
         ImageView btnSend = findViewById(R.id.btn_send);
         btnSend.setOnClickListener(v -> {
             sendTextMessage();
+            finish();
+            startActivity(getIntent());
         });
 
         ImageView btnCamera = findViewById(R.id.btn_camera);
@@ -184,6 +259,7 @@ public class OnChatActivity extends AppCompatActivity {
             });
             mediaListDialogFragment.show(getSupportFragmentManager(), "dialog");
         });
+
 
         ImageView btnMicro = findViewById(R.id.btn_micro);
 
@@ -271,11 +347,13 @@ public class OnChatActivity extends AppCompatActivity {
     }
 
     private void sendMessage(Message message) {
+
         recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
         messagesCol.document(message.getId()).set(message)
                 .addOnFailureListener(e -> {
                     recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
                 });
+
     }
 
     private boolean requestCameraPermission() {
@@ -393,4 +471,8 @@ public class OnChatActivity extends AppCompatActivity {
         });
         return taskCompletionSource.getTask();
     }
+
+
+
+
 }

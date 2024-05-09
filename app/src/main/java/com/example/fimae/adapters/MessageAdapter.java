@@ -1,21 +1,22 @@
 package com.example.fimae.adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fimae.components.MessageView;
-import com.example.fimae.models.Conversation;
 import com.example.fimae.models.Fimaers;
 import com.example.fimae.models.Message;
-import com.example.fimae.repository.ChatRepository;
 import com.example.fimae.repository.FimaerRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -37,11 +38,12 @@ public class MessageAdapter extends FirestoreAdapter {
 
     private ArrayList<Message> messages;
 
-    Message getMessage(int position) {
+    public Message getMessage(int position) {
         if (messages == null)
             return null;
         return messages.get(position);
     }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -68,17 +70,8 @@ public class MessageAdapter extends FirestoreAdapter {
         return new IncomingViewholder(messageView);
     }
 
-    private int calculateGridColumns(int urlsSize) {
-        if (urlsSize == 1) {
-            return 1;
-        } else if (urlsSize % 2 == 0 && urlsSize <= 4) {
-            return 2;
-        } else {
-            return 3;
-        }
-    }
-
     HashMap<String, Fimaers> fimaersHashMap = new HashMap<>();
+
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = getMessage(position);
@@ -91,89 +84,55 @@ public class MessageAdapter extends FirestoreAdapter {
                 messageView.setFimaers(fimaers1);
             });
         } else {
-            messageView.setFimaers( fimaers);
+            messageView.setFimaers(fimaers);
         }
 
-
-
-//        if (holder instanceof OutgoingViewholder) {
-//            OutgoingViewholder outgoingViewholder = (OutgoingViewholder) holder;
-//            if (Message.TEXT.equals(message.getType())) {
-//                outgoingViewholder.outgoingMsg.setText(message.getContent().toString());
-//                outgoingViewholder.recyclerView.setVisibility(View.GONE);
-//            } else if (Message.MEDIA.equals(message.getType())) {
-//                ArrayList<String> urls = (ArrayList<String>) message.getContent();
-//                ImageMessageAdapter imageMessageAdapter = new ImageMessageAdapter(urls);
-//                imageMessageAdapter.setOnClickMediaItem(new ImageMessageAdapter.IClickMediaItem() {
-//                    @Override
-//                    public void onClick(String url, int position) {
-//                        Intent intent = new Intent(context, MediaSliderActivity.class);
-//                        intent.putExtra("urls", urls);
-//                        intent.putExtra("currentIndex", position);
-//                        context.startActivity(intent);
-//                    }
-//                });
-//
-//                outgoingViewholder.recyclerView.setAdapter(imageMessageAdapter);
-//                int col = calculateGridColumns(urls.size());
-//                GridLayoutManager gridLayoutManager = new GridLayoutManager(holder.itemView.getContext(), col);
-//                outgoingViewholder.recyclerView.setLayoutManager(gridLayoutManager);
-//                outgoingViewholder.outgoingMsg.setVisibility(View.GONE);
-//            }
-//        } else if (holder instanceof IncomingViewholder) {
-//            IncomingViewholder incomingViewholder = (IncomingViewholder) holder;
-//            incomingViewholder.incomingMsg.setText(message.getContent().toString());
-//            if (Message.TEXT.equals(message.getType())) {
-//                incomingViewholder.incomingMsg.setText(message.getContent().toString());
-//                incomingViewholder.recyclerView.setVisibility(View.GONE);
-//            } else if (Message.MEDIA.equals(message.getType())) {
-//                ArrayList<String> urls = (ArrayList<String>) message.getContent();
-//                ImageMessageAdapter imageMessageAdapter = new ImageMessageAdapter(urls);
-//                imageMessageAdapter.setOnClickMediaItem(new ImageMessageAdapter.IClickMediaItem() {
-//                    @Override
-//                    public void onClick(String url, int position) {
-//                        Intent intent = new Intent(context, MediaSliderActivity.class);
-//                        intent.putExtra("urls", urls);
-//                        intent.putExtra("currentIndex", position);
-//                        context.startActivity(intent);
-//                    }
-//                });
-//                incomingViewholder.recyclerView.setAdapter(imageMessageAdapter);
-//                int col = calculateGridColumns(urls.size());
-//                GridLayoutManager gridLayoutManager = new GridLayoutManager(holder.itemView.getContext(), col);
-//                incomingViewholder.recyclerView.setLayoutManager(gridLayoutManager);
-//                incomingViewholder.incomingMsg.setVisibility(View.GONE);
-//            }
-//        } else if (holder instanceof PostLinkViewHolder) {
-//            PostLinkViewHolder postLinkViewHolder = (PostLinkViewHolder) holder;
-//            if (getMessageType(position) == SENDER_POST_VIEW_HOLDER) {
-//                ((PostLinkViewHolder) holder).linearLayout.setGravity(Gravity.END);
-//            } else {
-//                ((PostLinkViewHolder) holder).linearLayout.setGravity(Gravity.START);
-//                ((PostLinkViewHolder) holder).title.setTextColor(Color.BLACK);
-//                ((PostLinkViewHolder) holder).labelButton.setTextColor(Color.BLACK);
-//                ((PostLinkViewHolder) holder).constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.gray_400));
-//            }
-//
-//            assert message != null;
-//            PostRepository.getInstance().getPostById(message.getContent().toString()).addOnSuccessListener(post -> {
-//                if (post.getPostImages() != null && !post.getPostImages().isEmpty()) {
-//                    Glide.with(context).load(post.getPostImages().get(0)).into(postLinkViewHolder.imageView);
-//                } else {
-//                    postLinkViewHolder.imageView.setVisibility(View.GONE);
-//                }
-//                String content = post.getContent();
-//                postLinkViewHolder.title.setText(content);
-//            });
-//            postLinkViewHolder.itemView.setOnClickListener(view -> {
-//                Intent intent = new Intent(context, DetailPostActivity.class);
-//                intent.putExtra("id", message.getContent().toString());
-//                context.startActivity(intent);
-//            });
-//        }
+        messageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    showDeleteConfirmationDialog(adapterPosition);
+                }
+                return true; // Consume the long-click event
+            }
+        });    }
+    public void bind(Message message, RecyclerView.ViewHolder holder) {
+        MessageView messageView = (MessageView) holder.itemView;
+        messageView.setMessage(message);
+        Fimaers fimaers = fimaersHashMap.get(message.getIdSender());
+        if (fimaers == null) {
+            FimaerRepository.getInstance().getFimaerById(message.getIdSender()).addOnSuccessListener(fimaers1 -> {
+                fimaersHashMap.put(message.getIdSender(), fimaers1);
+                messageView.setFimaers(fimaers1);
+            });
+        } else {
+            messageView.setFimaers(fimaers);
+        }
     }
 
 
+    private void showDeleteConfirmationDialog(int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage("Are you sure you want to delete this message?")
+                .setPositiveButton("Delete", (dialog, which) -> deleteMessage(position))
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteMessage(int position) {
+        Message message = getMessage(position);
+        if (message != null) {
+            FirebaseFirestore.getInstance().collection("conversations")
+                    .document(message.getConversationID())
+                    .collection("messages")
+                    .document(message.getId())
+                    .delete()
+                    .addOnSuccessListener(aVoid -> Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(context, "Error deleting message", Toast.LENGTH_SHORT).show());
+        }
+    }
 
     @Override
     public void OnSuccessQueryListener(ArrayList queryDocumentSnapshots, ArrayList arrayList) {
@@ -185,24 +144,17 @@ public class MessageAdapter extends FirestoreAdapter {
             Message message = ((DocumentSnapshot) document).toObject(Message.class);
             messages.add(message);
         }
-        if (!messages.isEmpty()) {
-            Message lastMessage = messages.get(messages.size() - 1);
-            ChatRepository.getDefaultChatInstance().updateReadLastMessageAt(lastMessage.getConversationID(), lastMessage.getSentAt());
-        }
         notifyDataSetChanged();
-        return;
     }
-
 
     public static class IncomingViewholder extends RecyclerView.ViewHolder {
         MessageView messageView;
+
         public IncomingViewholder(@NonNull View itemView) {
             super(itemView);
             messageView = (MessageView) itemView;
         }
     }
-
-
 
     @Override
     public int getItemCount() {
@@ -217,5 +169,35 @@ public class MessageAdapter extends FirestoreAdapter {
         super.stopListening();
         messages.clear();
         fimaersHashMap.clear();
+    }
+    public void deleteMessage(Message message) {
+        if (messages != null) {
+            messages.remove(message);
+            notifyDataSetChanged();
+        }
+    }
+    public int getPosition(Message message) {
+        return messages.indexOf(message);
+    }
+    public void removeMessage(int position) {
+        if (position != -1 && position < messages.size()) {
+            messages.remove(position);
+            notifyItemRemoved(position); // Đảm bảo RecyclerView cập nhật ngay lập tức
+        }
+    }
+
+    public void addMessage(int position, String text) {
+        Log.d("MessageAdapter", "Adding message at position: " + position + " with text: " + text);
+        Message message = new Message();
+        message.setContent(text);
+        message.setIdSender(FirebaseAuth.getInstance().getUid());
+
+        if (position <= messages.size()) { // Kiểm tra để tránh IndexOutOfBoundsException
+            messages.add(position, message);
+            notifyItemInserted(position);
+            Log.d("MessageAdapter", "Message added and adapter notified.");
+        } else {
+            Log.e("MessageAdapter", "Attempted to add message at invalid position: " + position);
+        }
     }
 }
