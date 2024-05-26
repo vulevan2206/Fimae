@@ -1,5 +1,6 @@
 package com.example.fimae.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -114,6 +115,9 @@ public class ChangePasswordActivity extends AppCompatActivity {
                                                     currentPassword.clearFocus();
                                                     newPassword.clearFocus();
                                                     confirmNewPassword.clearFocus();
+                                                    Intent intent = new Intent(ChangePasswordActivity.this, ProfileActivity.class);
+                                                    startActivity(intent);
+                                                    finish();
 
                                                     // Đổi mật khẩu thành công, làm các công việc khác nếu cần
                                                 } else {

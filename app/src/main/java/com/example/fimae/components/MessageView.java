@@ -176,4 +176,16 @@ public class MessageView extends ConstraintLayout {
             return 3;
         }
     }
+
+
+    private OnDeleteClickListener onDeleteClickListener;
+
+    public interface OnDeleteClickListener {
+        void onDeleteClick();
+    }
+
+    public void setOnDeleteClickListener(OnDeleteClickListener listener) {
+        onDeleteClickListener = listener;
+    }
+
 }

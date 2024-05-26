@@ -109,6 +109,7 @@ public class CallVideoActivity extends AppCompatActivity {
                         binding.vIncoming.setVisibility(View.GONE);
                         binding.vOption.setVisibility(View.VISIBLE);
                         binding.btnEnd.setVisibility(View.VISIBLE);
+                        binding.btnSwitch.setVisibility(View.VISIBLE);
                     }
                 });
             }
@@ -145,7 +146,19 @@ public class CallVideoActivity extends AppCompatActivity {
                 binding.btnVideo.setBackgroundResource(isVideoOn? R.drawable.background_btn_videocam_on : R.drawable.background_btn_videocam_off);
             }
         });
+        binding.btnSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(call != null){
+                    call.switchCamera(new StatusListener() {
+                        @Override
+                        public void onSuccess() {
 
+                        }
+                    });
+                }
+            }
+        });
         if(getIntent() != null){
             isInComingCallVideo = getIntent().getBooleanExtra("isIncomingCall", true);
             to = getIntent().getStringExtra("to");
@@ -264,7 +277,10 @@ public class CallVideoActivity extends AppCompatActivity {
                             // cuoc goi bat dau
                             if(mMediaState == StringeeCall2.MediaState.CONNECTED){
                                 binding.tvStatus.setText("");
+                                binding.btnSwitch.setVisibility(View.VISIBLE); // hoặc View.GONE nếu không cần hiển thị nút này
+
                             }
+
                             break;
                         case BUSY:
                             binding.tvStatus.setText("Máy bận");
@@ -316,6 +332,8 @@ public class CallVideoActivity extends AppCompatActivity {
                     if(mediaState == StringeeCall2.MediaState.CONNECTED){
                         if(mSignalingState == StringeeCall2.SignalingState.ANSWERED){
                             binding.tvStatus.setText("");
+                            binding.btnSwitch.setVisibility(View.VISIBLE);
+
                         }
                     }else{
                         // mat ket noi

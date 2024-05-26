@@ -1,9 +1,12 @@
 package com.example.fimae.repository;
 
+import android.content.Context;
+import android.media.MediaPlayer;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.example.fimae.R;
 import com.example.fimae.models.Conversation;
 import com.example.fimae.models.Message;
 import com.example.fimae.service.FirebaseService;
@@ -166,8 +169,40 @@ public class ChatRepository {
     public Task<Message> sendPostLink(String conversationId, String content) {
         return sendMessage(conversationId, content, Message.POST_LINK);
     }
-    public Task<Message> sendTextMessage(String conversationId, String content) {
-        return sendMessage(conversationId, content, Message.TEXT);
+    public Task<Message> sendTextMessage(String conversationId, String content, Context context) {
+        TaskCompletionSource<Message> taskCompletionSource = new TaskCompletionSource<>();
+        if (content.isEmpty()) {
+            taskCompletionSource.setException(new Exception("Message has null content"));
+            return taskCompletionSource.getTask();
+        }
+        WriteBatch batch = firestore.batch();
+        DocumentReference currentConversationRef = conversationsRef.document(conversationId);
+        CollectionReference reference = currentConversationRef.collection("messages");
+        DocumentReference messDoc = reference.document();
+        Message message = new Message();
+        message.setId(messDoc.getId());
+        message.setType(Message.TEXT);
+        message.setContent(content);
+        message.setIdSender(FirebaseAuth.getInstance().getUid());
+        message.setConversationID(conversationId);
+        batch.set(messDoc, message);
+        batch.update(currentConversationRef, "lastMessage", messDoc);
+        batch.commit().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                taskCompletionSource.setResult(message);
+                // Phát âm thanh chuông chỉ trên thiết bị của người nhận ở đây
+                //playNotificationSound(context);
+            } else {
+                taskCompletionSource.setException(Objects.requireNonNull(task.getException()));
+            }
+        });
+        return taskCompletionSource.getTask();
+    }
+
+    private void playNotificationSound(Context context) {
+        // Phát âm thanh chuông chỉ trên thiết bị của người nhận ở đây
+        MediaPlayer notificationPlayer = MediaPlayer.create(context, R.raw.ring); // Thay R.raw.notification_sound bằng tệp âm thanh chuông của bạn
+        notificationPlayer.start();
     }
     public Task<Message> sendShortMessage(String conversationId, String content) {
         return sendMessage(conversationId, content, Message.SHORT_VIDEO);
@@ -213,5 +248,9 @@ public class ChatRepository {
             }
         });
         return taskCompletionSource.getTask();
+    }
+    public Task<Void> deleteMessage(String conversationId, String messageId) {
+        DocumentReference messageRef = firestore.collection("conversations").document(conversationId).collection("messages").document(messageId);
+        return messageRef.delete();
     }
 }

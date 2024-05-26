@@ -101,7 +101,6 @@ public class ProfileFragment extends Fragment {
     private PostAdapter postAdapter;
     ShortsReviewProfileAdapter shortsReviewProfileAdapter;
     StoryReviewProfileAdapter storyReviewProfileAdapter;
-
     public static ProfileFragment newInstance(String uid) {
         Bundle args = new Bundle();
         args.putString("uid", uid);
@@ -281,7 +280,7 @@ public class ProfileFragment extends Fragment {
                         break;
                     case 2:
                         Query storyQuery = StoryRepository.getInstance().getStoryUserQuery(viewModel.getUid());
-                        StoryReviewProfileAdapter storyReviewAdapter = new StoryReviewProfileAdapter(
+                        storyReviewProfileAdapter = new StoryReviewProfileAdapter(
                                 storyQuery,
                                 new StoryReviewProfileAdapter.IClickCardListener() {
                                     @Override
@@ -290,7 +289,7 @@ public class ProfileFragment extends Fragment {
                                     }
                                 }
                         );
-                        binding.postList.setAdapter(storyReviewAdapter);
+                        binding.postList.setAdapter(storyReviewProfileAdapter);
                         GridAutoFitLayoutManager storyLayoutManager = new GridAutoFitLayoutManager(getContext(), 100);
                         binding.postList.setLayoutManager(storyLayoutManager);
                         break;

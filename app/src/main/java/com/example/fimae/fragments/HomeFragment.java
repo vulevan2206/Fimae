@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.fimae.R;
 import com.example.fimae.activities.HomeActivity;
 import com.example.fimae.activities.ProfileActivity;
+import com.example.fimae.activities.SearchUserActivity;
 import com.example.fimae.adapters.BottomSheetItemAdapter;
 import com.example.fimae.adapters.UserHomeViewAdapter;
 import com.example.fimae.models.BottomSheetItem;
@@ -72,10 +73,11 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class HomeFragment extends Fragment {
-
+    private int followingUserCount = 0;
+    private int notFollowingUserCount = 0;
     private FirebaseFirestore firestore;
     private CollectionReference fimaeUserRef;
-
+    private ImageView imgSearch;
     private View mView;
     private RecyclerView mRcvUsers;
     private RecyclerView mRcvMe;
@@ -429,6 +431,7 @@ public class HomeFragment extends Fragment {
                                     if (user != null) {
                                         mUsers.add(user);
                                         userAdapter.notifyDataSetChanged(); // Cập nhật adapter mỗi lần có người dùng mới được thêm vào danh sách
+                                        countUsersInTabsFollowing();
                                     }
                                 })
                                 .addOnFailureListener(e -> {
@@ -466,6 +469,7 @@ public class HomeFragment extends Fragment {
                                             // Nếu danh sách người theo dõi không chứa người dùng hiện tại, thêm người dùng vào danh sách chưa được theo dõi
                                             mUsers.add(user);
                                             userAdapter.notifyDataSetChanged(); // Cập nhật adapter
+                                            countUsersInTabsNotFollowing();
                                         }
                                     })
                                     .addOnFailureListener(e -> {
@@ -482,6 +486,16 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        imgSearch = view.findViewById(R.id.imgSearch);
+        imgSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Tạo Intent để chuyển đến trang ActivitySearchUser
+                Intent intent = new Intent(getContext(), SearchUserActivity.class);
+                startActivity(intent);
+            }
+        });
+
         // Gọi phương thức để lấy danh sách người dùng khi fragment được tạo ra
         getUsersFollowing(); // Mặc định hiển thị danh sách người dùng đang theo dõi
         TabLayout tabLayout = view.findViewById(R.id.tab_home);
@@ -493,25 +507,35 @@ public class HomeFragment extends Fragment {
                     case 0:
                         // Hiển thị danh sách người dùng đang theo dõi khi nhấn vào tab "Đang theo dõi"
                         getUsersFollowing();
+                        tab.setText("Đang theo dõi(" + followingUserCount + ")");
                         break;
                     case 1:
                         // Hiển thị danh sách người dùng chưa được theo dõi khi nhấn vào tab "Đề xuất"
                         getUsersNotFollowing();
+                        tab.setText("Đề xuất(" + notFollowingUserCount + ")");
                         break;
                 }
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                // Không cần xử lý khi tab không được chọn
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                // Không cần xử lý khi tab được chọn lại
                 onTabSelected(tab);
             }
         });
     }
+    private void countUsersInTabsFollowing() {
+        followingUserCount = mUsers.size();
+
+    }
+    private void countUsersInTabsNotFollowing() {
+
+        notFollowingUserCount = mUsers.size();
+    }
+
+
 
 }
